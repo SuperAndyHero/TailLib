@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "RWlcxuZw73t4fHMSOIjbL/s8BmdElGxabQHittzxfQd9LRDtN2gCFzUzA3ey7FosbqSk3bPxt6sLvDvRTNrDzw==",
+  "success": true,
+  "projectFilePath": "D:\\Documents\\My Games\\Terraria\\ModLoader\\Mod Sources\\TailLib\\TailLib.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\crowly\\.nuget\\packages\\tmodloader.codeassist\\0.1.2\\tmodloader.codeassist.0.1.2.nupkg.sha512"
+  ],
+  "logs": []
+}

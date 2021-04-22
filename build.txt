@@ -1,0 +1,5 @@
+displayName = Andy's Tail Library
+author = SuperAndyHero
+version = 1.0
+includePDB = true
+buildIgnore = *.csproj, *.user, obj\*, bin\*, .vs\*, Properties\*

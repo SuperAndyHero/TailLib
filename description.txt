@@ -1,0 +1,2 @@
+Tail Library to be used (and included in) other mods.
+Please credit me if you use this or parts of this in your mod.

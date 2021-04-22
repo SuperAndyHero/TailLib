@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30907.101
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TailLib", "TailLib.csproj", "{8276E984-3749-43BC-B620-FE3A2607897E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8276E984-3749-43BC-B620-FE3A2607897E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8276E984-3749-43BC-B620-FE3A2607897E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8276E984-3749-43BC-B620-FE3A2607897E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8276E984-3749-43BC-B620-FE3A2607897E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2A9B7AB1-0CDB-4710-9041-7DA87EF3AD32}
+	EndGlobalSection
+EndGlobal

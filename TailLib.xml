@@ -1,0 +1,412 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>TailLib</name>
+    </assembly>
+    <members>
+        <member name="T:TailLib.Extensions">
+            <summary>
+            Helper Extensions
+            </summary>
+        </member>
+        <member name="M:TailLib.Extensions.SetTail(Terraria.NPC,System.Type)">
+            <summary>
+            Adds a tail to a npc, suggested that you call this in setdefaults
+            </summary>
+            <param name="npc"></param>
+            <param name="type"></param>
+        </member>
+        <member name="M:TailLib.Extensions.TailActive(Terraria.NPC)">
+            <summary>
+            gets the tailactive value for said npc
+            </summary>
+            <param name="npc"></param>
+            <returns></returns>
+        </member>
+        <member name="M:TailLib.Extensions.TailActive(Terraria.NPC,System.Boolean)">
+            <summary>
+            sets the tail active value for said npc
+            </summary>
+            <param name="npc"></param>
+            <param name="value"></param>
+        </member>
+        <member name="M:TailLib.Extensions.FacingDirection(Terraria.Player)">
+            <summary>
+            combines player.direction and player.gravDir
+            </summary>
+            <param name="player"></param>
+            <returns></returns>
+        </member>
+        <member name="M:TailLib.Extensions.UpwardsTurn(TailLib.TailInstance,System.Single)">
+            <summary>
+            This gives the tail upwards momentum when turning (when the player direction and the side the last tail segement are on dont match
+            </summary>
+            <param name="tailInstance"></param>
+            <param name="strength"></param>
+        </member>
+        <member name="M:TailLib.Extensions.TailWobble(TailLib.TailInstance,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+            Wobbles the tail when idle or running. is run on the last segment in the tail. Use the other overload to run it on other segments.
+            </summary>
+            <param name="tailInstance">passed instance to run this on</param>
+            <param name="freq">frequency of the cycles</param>
+            <param name="runningFreq">frequency of the cycles when running</param>
+            <param name="amplitude">ampiltude of the cycles</param>
+            <param name="runningAmplitude">amplitude of the cycles when running</param>
+            <param name="multX">multiplier for the X axis. For tails that rest vertically</param>
+            <param name="multY">multiplier for the Y axis. For tails that rest horizontally</param>
+        </member>
+        <member name="M:TailLib.Extensions.TailWobble(TailLib.TailInstance,System.Int32,System.Int32,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+            Wobbles the tail when idle or running.
+            </summary>
+            <param name="tailInstance">passed instance to run this on</param>
+            <param name="startIndex">first index that is moved</param>
+            <param name="endIndex">last index that is moved</param>
+            <param name="freq">frequency of the cycles</param>
+            <param name="runningFreq">frequency of the cycles when running</param>
+            <param name="amplitude">ampiltude of the cycles</param>
+            <param name="runningAmplitude">amplitude of the cycles when running</param>
+            <param name="multX">multiplier for the X axis. For tails that rest vertically</param>
+            <param name="multY">multiplier for the Y axis. For tails that rest horizontally</param>
+            <param name="runThreshold">speed threshold for when the player is running</param> 
+        </member>
+        <member name="T:TailLib.TailGlobalNPC">
+            <summary>
+            This mod's globalNpc for handling tails on npcs
+            </summary>
+        </member>
+        <member name="F:TailLib.TailGlobalNPC.tail">
+            <summary>
+            The instance of the current tail, is null unless set
+            </summary>
+        </member>
+        <member name="F:TailLib.TailGlobalNPC.tailActive">
+            <summary>
+            If the tail is currently active
+            </summary>
+        </member>
+        <member name="T:TailLib.TailHandler">
+            <summary>
+            this handles everything to do with tails
+            </summary>
+        </member>
+        <member name="F:TailLib.TailHandler.PlayerTailList">
+            <summary>
+            List of every tail instance on players
+            Note: updating is done locally and not through this
+            </summary>
+        </member>
+        <member name="F:TailLib.TailHandler.NpcTailList">
+            <summary>
+            List of every tail instace on npcs
+            </summary>
+        </member>
+        <member name="F:TailLib.TailHandler.PlayerTailTarget">
+            <summary>
+            The render target the player tails are drawn to, drawn just before players
+            </summary>
+        </member>
+        <member name="F:TailLib.TailHandler.NpcTailTarget">
+            <summary>
+            The render target npc tails are drawn to, drawn just before npcs
+            </summary>
+        </member>
+        <member name="T:TailLib.TailHandler.Layer">
+            <summary>
+            The layers you can have the tail draw on
+            </summary>
+        </member>
+        <member name="M:TailLib.TailHandler.GetLayerList(TailLib.TailHandler.Layer)">
+            <summary>
+            Gets a reference to a specific list via tha passed layer
+            </summary>
+            <param name="layer"></param>
+            <returns></returns>
+        </member>
+        <member name="T:TailLib.Tailbase">
+            <summary>
+            The base class for a new tail.
+            </summary>
+        </member>
+        <member name="F:TailLib.Tailbase.tailInstance">
+            <summary>
+            This is a reference to the tailInstance this is contained in.
+            Can be used to access
+            </summary>
+        </member>
+        <member name="P:TailLib.Tailbase.Texture">
+            <summary>
+            the path the to the texture. Note: do not access tailInstance from here or else it may be null
+            </summary>
+        </member>
+        <member name="P:TailLib.Tailbase.WorldOffset">
+            <summary>
+            offsets the tail in the world, this gets automatically flipped based on player direction
+            </summary>
+        </member>
+        <member name="P:TailLib.Tailbase.TexPosOffset">
+            <summary>
+            for offsetting the texture
+            </summary>
+        </member>
+        <member name="P:TailLib.Tailbase.TexSizeOffset">
+            <summary>
+            for getting the scale / aspect ratio right. Make Sure your settled positions are accurate beforehand
+            </summary>
+        </member>
+        <member name="P:TailLib.Tailbase.VertexCount">
+            <summary>
+            The amount of points in the tail.
+            Make sure this is at least 2.
+            </summary>
+        </member>
+        <member name="P:TailLib.Tailbase.PhysicsRepetitions">
+            <summary>
+            how many times the physics should be ran. A good range is between 2 and 10. 
+            Default: 2
+            </summary>
+        </member>
+        <member name="P:TailLib.Tailbase.VertexDrag">
+            <summary>
+            how much the tail should be slowed in the air. 1 is none. A good range is 1 to 1.5.
+            Default: 1
+            </summary>
+        </member>
+        <member name="P:TailLib.Tailbase.Width">
+            <summary>
+            width of the tail geometry from center to edge.
+            Note: if you leave VertexDistance as null please set this
+            Default: VertexDistance
+            </summary>
+        </member>
+        <member name="P:TailLib.Tailbase.VertexDistance">
+            <summary>
+            Distance between every vertex.
+            VertexDistances can be used instead to set each distance specifically.
+            </summary>
+        </member>
+        <member name="P:TailLib.Tailbase.VertexDistances">
+            <summary>
+            Distance between each specific vertex.
+            VertexDistance can be used instead to set every distance the same.
+            Note: if this is overridded then VertexDistance is not used.
+            </summary>
+        </member>
+        <member name="P:TailLib.Tailbase.VertexGravityForce">
+            <summary>
+            Gravity applied to every vertex.
+            Assume the player is facing left when setting. (1, 1) points to the bottom right.
+            It is recommended you use VertexGravityForces instead.
+            If VertexGravityForces is used, this becomes a multiplier for it.
+            </summary>
+        </member>
+        <member name="P:TailLib.Tailbase.VertexGravityForces">
+            <summary>
+            Gravity applied to each specific vertex.
+            Assume the player is facing left when setting. (1, 1) points to the bottom right.
+            VertexGravityForce can be used to set the same gravity for each.
+            Note: if this is overridded then VertexGravityForce is not used.
+            Tip1: It is suggested that you make a graph, and enter each point in here with the previous point being the relative zero point for the current one.
+            Tip2: Then adjust until you end up with the shape you want, starting with more weight and giving less weight to the points the further you go.
+            </summary>
+        </member>
+        <member name="P:TailLib.Tailbase.SettledPoints">
+            <summary>
+            This is the most important part for having the texture remain undistorted.
+            After you get the shape you want with VertexGravityForces, allow the tail to stop moving and record the points it settled in.
+            Do this after you have decided on the distance, and if you change the distance this must be changed too.
+            Make sure the player is facing left when setting
+            Note: this can be left null before you have gotten the settled points from in-game.
+            </summary>
+        </member>
+        <member name="M:TailLib.Tailbase.GetLightColor(Microsoft.Xna.Framework.Vector2)">
+            <summary>
+            Helper method that converts the coords to tilecoords and multiplies by tailInstance.alpha
+            </summary>
+            <param name="worldPos"></param>
+            <returns></returns>
+        </member>
+        <member name="M:TailLib.Tailbase.DrawSprites(Microsoft.Xna.Framework.Graphics.SpriteBatch)">
+            <summary>
+            For drawing sprites at every vertex
+            </summary>
+            <param name="spriteBatch"></param>
+        </member>
+        <member name="P:TailLib.Tailbase.SpineEnabled">
+            <summary>
+            for if the spine outline is enabled. disabled by default.
+            if you plan to enable/disable this at runtime, make sure this is true when the TailBase instance is created
+            as the buffers for this are not created if this is false.
+            Note: there is no predraw for this since it is geometry, and should be done in PreDrawGeometry
+            </summary>
+        </member>
+        <member name="M:TailLib.Tailbase.SpineColor(System.Int32)">
+            <summary>
+            the color its drawn in, if you pass your own color consider multiplying by tailInstance.alpha
+            </summary>
+            <param name="index"></param>
+            <returns></returns>
+        </member>
+        <member name="P:TailLib.Tailbase.GeometryEnabled">
+            <summary>
+            if the geometry should draw.
+            return false to draw your own in PreDrawGeometry.
+            if you plan to enable/disable this at runtime, make sure this is true when the TailBase instance is created
+            as the buffers for this are not created if this is false.
+            </summary>
+        </member>
+        <member name="M:TailLib.Tailbase.PreDrawGeometry(Microsoft.Xna.Framework.Graphics.BasicEffect,Microsoft.Xna.Framework.Graphics.EffectPass,Microsoft.Xna.Framework.Graphics.GraphicsDevice)">
+            <summary>
+            For drawing your own geometry
+            </summary>
+            <param name="effect"></param>
+            <param name="pass"></param>
+            <param name="graphicsDevice"></param>
+        </member>
+        <member name="M:TailLib.Tailbase.GeometryColor(System.Int32)">
+            <summary>
+            the color its drawn in, if you pass your own color consider multiplying by tailInstance.alpha
+            </summary>
+            <param name="index"></param>
+            <returns></returns>
+        </member>
+        <member name="M:TailLib.Tailbase.PreUpdate">
+            <summary>
+            Allows you to do stuff when this is updated
+            Return false to stop the tail from updating
+            Note: tailInstance has a few helper extension methods you can call from here for some built in functionallity
+            </summary>
+        </member>
+        <member name="M:TailLib.Tailbase.PostUpdate">
+            <summary>
+            Use this for doing stuff after the tail updates, like changing the direction
+            Called even if PreUpdate returns false
+            </summary>
+        </member>
+        <member name="T:TailLib.TailInstance">
+            <summary>
+            This class stores everything needed have a working tail, as an instance is made for anything with a tail.
+            It stores the TailBase instance, the verlet chain instace, the vertex/index buffers, and other info like direction and alpha
+            </summary>
+        </member>
+        <member name="F:TailLib.TailInstance.tailBase">
+            <summary>
+            The TailBase instance, has all the values to set the tail up
+            </summary>
+        </member>
+        <member name="F:TailLib.TailInstance.tailBones">
+            <summary>
+            The VerletChainInstance, where you can access anything about the verlet chain
+            </summary>
+        </member>
+        <member name="F:TailLib.TailInstance.facingDirection">
+            <summary>
+            Direction can either be 1 or -1 for Left or Right respectively
+            </summary>
+        </member>
+        <member name="F:TailLib.TailInstance.alpha">
+            <summary>
+            The alpha value, this ranges from 0 to 1.
+            Multiply your color by this to have it be effected by player immune opacity
+            </summary>
+        </member>
+        <member name="F:TailLib.TailInstance.layer">
+            <summary>
+            The layer this is drawn on
+            You can check this to see if this tail is on a player/npc/etc
+            </summary>
+        </member>
+        <member name="M:TailLib.TailInstance.#ctor(System.Type,Microsoft.Xna.Framework.Vector2,TailLib.TailHandler.Layer,Microsoft.Xna.Framework.Vector2)">
+            <summary>
+            Makes a instance of the TailBase type passed in
+            </summary>
+            <param name="type">The type of the tail</param>
+            <param name="position">The start position for the tail, usually the center of the object</param>
+            <param name="drawLayer">Which layer it should be drawn on</param>
+            <param name="direction">The facing direction, can be 1 or -1</param>
+        </member>
+        <member name="M:TailLib.TailInstance.Remove">
+            <summary>
+            Removes this TailInstance from the drawlist its in
+            </summary>
+        </member>
+        <member name="M:TailLib.TailInstance.Update(Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2)">
+            <summary>
+            updates the verlet chain and it's start point, and checks if the tail should be flipped
+            </summary>
+            <param name="position"></param>
+            <param name="direction"></param>
+        </member>
+        <member name="M:TailLib.TailInstance.DrawSprites(Microsoft.Xna.Framework.Graphics.SpriteBatch)">
+            <summary>
+            allows the tailbase to draw custom sprites
+            </summary>
+            <param name="spriteBatch"></param>
+        </member>
+        <member name="M:TailLib.TailInstance.DrawGeometry(Microsoft.Xna.Framework.Graphics.BasicEffect,Microsoft.Xna.Framework.Graphics.EffectPass,Microsoft.Xna.Framework.Graphics.GraphicsDevice)">
+            <summary>
+            draws the geometry and the spine (if enabled)
+            as well as any custom geometry the base has
+            </summary>
+            <param name="effect"></param>
+            <param name="pass"></param>
+            <param name="graphicsDevice"></param>
+        </member>
+        <!-- Badly formed XML comment ignored for member "T:TailLib.TailItem" -->
+        <member name="M:TailLib.TailItem.SafeUpdateAccessory(Terraria.Player,System.Boolean)">
+            <summary>
+            Use this as you would normally use UpdateAccessory.
+            Return false to disable tail.
+            </summary>
+            <param name="player"></param>
+            <param name="hideVisual"></param>
+            <returns></returns>
+        </member>
+        <member name="T:TailLib.TailNpc">
+            <summary>
+            A helper for npcs with tail
+            Internally this is done with:  <c>npc.SetTail(TailType)</c>
+            AI is used for this so use SafeAI instead
+            </summary>
+        </member>
+        <member name="M:TailLib.TailNpc.SafeAI">
+            <summary>
+            Use this as you would normally use AI.
+            Return false to disable tail.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:TailLib.TailPlayer">
+            <summary>
+            This mod's modplayer for handling tails on the player
+            </summary>
+        </member>
+        <member name="F:TailLib.TailPlayer.tail">
+            <summary>
+            The instance of the current tail, is null unless set
+            </summary>
+        </member>
+        <member name="F:TailLib.TailPlayer.currentlyActive">
+            <summary>
+            If the tail is currently active
+            </summary>
+        </member>
+        <member name="F:TailLib.TailPlayer.previouslyActive">
+            <summary>
+            If the tail is previously active
+            </summary>
+        </member>
+        <member name="P:TailLib.TailPlayer.CurrentTailType">
+            <summary>
+            The current active tail, if you want to set the player's tail just set this every update, like UpdateAccessory in ModItem
+            </summary>
+        </member>
+        <member name="M:TailLib.TailPlayer.OnEnterWorld(Terraria.Player)">
+            <summary>
+            singleplayer and client only, convenient place to clear all lists
+            </summary>
+            <param name="player"></param>
+        </member>
+    </members>
+</doc>
