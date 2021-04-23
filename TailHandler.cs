@@ -126,7 +126,8 @@ namespace TailLib
     {
         /// <summary>
         /// This is a reference to the tailInstance this is contained in.
-        /// Can be used to access
+        /// Can be used to access the tail bone instance
+        /// this may be null if access from some methods, since a tailbase instance is made on the main menu for vanity drawing
         /// </summary>
         public TailInstance tailInstance;
 
@@ -501,9 +502,6 @@ namespace TailLib
             }
         }
 
-        /// <summary>
-        /// flips the direction value and the chain's gravity direction
-        /// </summary>
         //public void FlipHorizontal()
         //{
         //    facingDirection = -facingDirection;
@@ -599,9 +597,8 @@ namespace TailLib
         }
     }
 
-
     /// <summary>
-    /// A helper for items that give the player a tail
+    ///A helper for items that give the player a tail
     /// Internally this is done with:  <c>player.GetModPlayer<TailPlayer>().CurrentTailType = TailType</c>
     /// UpdateAccessory is used for this so use SafeUpdateAccessory instead
     /// </summary>
@@ -611,12 +608,11 @@ namespace TailLib
         protected TailItem(Type tailType) => 
             TailType = tailType;
 
-        public sealed override void UpdateAccessory(Player player, bool hideVisual)
+        public sealed override void UpdateEquip(Player player)
         {
-            if (SafeUpdateAccessory(player, hideVisual)) 
+            if (SafeUpdateEquip(player)) 
                 player.GetModPlayer<TailPlayer>().CurrentTailType = TailType;
         }
-
         /// <summary>
         /// Use this as you would normally use UpdateAccessory.
         /// Return false to disable tail.
@@ -624,7 +620,7 @@ namespace TailLib
         /// <param name="player"></param>
         /// <param name="hideVisual"></param>
         /// <returns></returns>
-        public virtual bool SafeUpdateAccessory(Player player, bool hideVisual) => true;
+        public virtual bool SafeUpdateEquip(Player player) => true;
     }
 
     /// <summary>

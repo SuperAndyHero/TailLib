@@ -132,7 +132,8 @@
         <member name="F:TailLib.Tailbase.tailInstance">
             <summary>
             This is a reference to the tailInstance this is contained in.
-            Can be used to access
+            Can be used to access the tail bone instance
+            this may be null if access from some methods, since a tailbase instance is made on the main menu for vanity drawing
             </summary>
         </member>
         <member name="P:TailLib.Tailbase.Texture">
@@ -354,7 +355,7 @@
             <param name="graphicsDevice"></param>
         </member>
         <!-- Badly formed XML comment ignored for member "T:TailLib.TailItem" -->
-        <member name="M:TailLib.TailItem.SafeUpdateAccessory(Terraria.Player,System.Boolean)">
+        <member name="M:TailLib.TailItem.SafeUpdateEquip(Terraria.Player)">
             <summary>
             Use this as you would normally use UpdateAccessory.
             Return false to disable tail.

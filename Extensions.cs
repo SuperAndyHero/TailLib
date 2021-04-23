@@ -72,7 +72,7 @@ namespace TailLib
         /// <param name="runningAmplitude">amplitude of the cycles when running</param>
         /// <param name="multX">multiplier for the X axis. For tails that rest vertically</param>
         /// <param name="multY">multiplier for the Y axis. For tails that rest horizontally</param>
-        public static void TailWobble(this TailInstance tailInstance, float freq = 0.05f, float runningFreq = 0.2f, float amplitude = 1f, float runningAmplitude = 1.2f, float multX = 1, float multY = 0)
+        public static void TailWobble(this TailInstance tailInstance, float freq = 0.05f, float runningFreq = 0.2f, float amplitude = 0.25f, float runningAmplitude = 0.6f, float multX = 1, float multY = 0)
         {
             int index = tailInstance.tailBones.segmentCount - 1;
             tailInstance.TailWobble(index - 1, index, freq, runningFreq, amplitude, runningAmplitude, multX, multY);
