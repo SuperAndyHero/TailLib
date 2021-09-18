@@ -285,6 +285,13 @@
             Called even if PreUpdate returns false
             </summary>
         </member>
+        <member name="M:TailLib.Tailbase.SpriteDirection">
+            <summary>
+            which direction should the sprite face
+            by default is based on which side of the player the end of the tail is on
+            </summary>
+            <param name="tailInstance"></param>
+        </member>
         <member name="T:TailLib.TailInstance">
             <summary>
             This class stores everything needed have a working tail, as an instance is made for anything with a tail.

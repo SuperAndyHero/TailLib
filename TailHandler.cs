@@ -287,6 +287,14 @@ namespace TailLib
         /// Called even if PreUpdate returns false
         /// </summary>
         public virtual void PostUpdate() { }
+
+        /// <summary>
+        /// which direction should the sprite face
+        /// by default is based on which side of the player the end of the tail is on
+        /// </summary>
+        /// <param name="tailInstance"></param>
+        public virtual bool SpriteDirection() =>
+            tailInstance.tailBones.ropeSegments[0].posNow.X > tailInstance.tailBones.ropeSegments[tailInstance.tailBones.segmentCount - 1].posNow.X;
     }
 
     /// <summary>
@@ -539,7 +547,8 @@ namespace TailLib
                     VertexPositionColorTexture[] vertexPos = new VertexPositionColorTexture[geometryBuffer.VertexCount];
 
                     Vector2 startLocation = tailBones.ropeSegments[0].ScreenPos - Main.ViewSize * 0.5f;
-                    int directionMult = (startLocation.X > tailBones.ropeSegments[tailBones.segmentCount - 1].ScreenPos.X - Main.ViewSize.X * 0.5f ? -1 : 1) * -(int)facingDirection.Y;
+                    //int directionMult = (startLocation.X > tailBones.ropeSegments[tailBones.segmentCount - 1].ScreenPos.X - Main.ViewSize.X * 0.5f ? -1 : 1) * -(int)facingDirection.Y;
+                    int directionMult = tailBase.SpriteDirection() ? 1 : -1;
                     Vector2[] texCor = directionMult == 1 ? texCoordL : texCoordR;
 
                     vertexPos[2] = new VertexPositionColorTexture(new Vector3(tailBones.ropeSegments[1].ScreenPos - Main.ViewSize / 2, 0), tailBase.GeometryColor(1), texCor[2]);

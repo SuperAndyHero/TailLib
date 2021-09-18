@@ -17,45 +17,43 @@ namespace TailLib
 
         public int constraintRepetitions = 2;
         public float drag = 1f;
-        public Vector2 forceGravity;
+        public Vector2 forceGravity = Vector2.Zero;
 
         //medium variables
-        public bool useStartPoint;
-        public Vector2 startPoint;
-        public bool useEndPoint;
-        public Vector2 endPoint;
+        public bool useStartPoint = true;
+        public Vector2 startPoint = Vector2.Zero;
+        public bool useEndPoint = false;
+        public Vector2 endPoint = Vector2.Zero;
 
         //advanced variables
-        public bool customDistances;
+        public bool customDistances = false;
         public List<int> segmentDistances;//length must match the segment count
 
-        public bool customGravity;
+        public bool customGravity = false;
         public List<Vector2> forceGravities;//length must match the segment count
 
 
 
         public List<RopeSegment> ropeSegments;
 
-
-
-        public VerletChainInstance(int SegCount, Vector2? StartPoint = null, Vector2? EndPoint = null, int? SegDistance = 5, Vector2? Grav = null)
+        public VerletChainInstance(int SegCount, bool specialDraw, int SegDistance)
         {
             segmentCount = SegCount;
-            segmentDistance = SegDistance ?? 5;
+            segmentDistance = SegDistance;
 
-            constraintRepetitions = 2;
-            drag = 1f;
+            Start();
+        }
+
+        public VerletChainInstance(int SegCount, Vector2? StartPoint = null, Vector2? EndPoint = null, int SegDistance = 5, Vector2? Grav = null)
+        {
+            segmentCount = SegCount;
+            segmentDistance = SegDistance;
 
             forceGravity = Grav ?? Vector2.Zero;
 
-            useStartPoint = true;
             startPoint = StartPoint ?? Vector2.Zero;
 
-            useEndPoint = false;
             endPoint = EndPoint ?? Vector2.Zero;
-
-            customGravity = false;
-            customDistances = false;
 
             Start(EndPoint != null);
         }
@@ -67,17 +65,11 @@ namespace TailLib
             segmentCount = SegCount;
             segmentDistance = SegDistance;
 
-            constraintRepetitions = 2;
-            drag = 1f;
-
             forceGravity = Grav ?? (CustomGravs ? Vector2.One : Vector2.Zero);
 
-            useStartPoint = true;
             startPoint = StartPoint ?? Vector2.Zero;
 
-            useEndPoint = false;
             endPoint = EndPoint ?? Vector2.Zero;
-
 
             if (customGravity = CustomGravs)
                 forceGravities = SegGravs ?? Enumerable.Repeat(forceGravity, segmentCount).ToList();
@@ -88,7 +80,7 @@ namespace TailLib
             Start(EndPoint != null);
         }
 
-        public void Start(bool SpawnEndPoint)//public in case you want to reset the chain
+        public void Start(bool SpawnEndPoint = false)//public in case you want to reset the chain
         {
             ropeSegments = new List<RopeSegment>();
 
@@ -115,6 +107,19 @@ namespace TailLib
             }
         }
 
+        public void UpdateChain(Vector2 Start, Vector2 End)
+        {
+            endPoint = End;
+            startPoint = Start;
+            UpdateChain();
+        }
+
+        public void UpdateChain(Vector2 Start)
+        {
+            startPoint = Start;
+            UpdateChain();
+        }
+
         public void UpdateChain()
         {
             if (Active)
@@ -137,7 +142,7 @@ namespace TailLib
                 if (useStartPoint)
                     ropeSegments[0].posNow = startPoint;
                 if (useEndPoint)
-                    ropeSegments[segmentCount].posNow = endPoint;
+                    ropeSegments[segmentCount - 1].posNow = endPoint;
                 ApplyConstraint();
             }
         }
