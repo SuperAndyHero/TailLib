@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using System;
+using System.Collections.Generic;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -12,7 +13,11 @@ namespace TailLib
     /// </summary>
     public class TailGlobalNPC : GlobalNPC
 	{
-		public override bool InstancePerEntity => true;
+
+        public static List<NPC> RemovalQueue = new List<NPC>();
+        public static Dictionary<NPC, TailInstance> ActiveTailNpcsList = new Dictionary<NPC, TailInstance>();
+
+        public override bool InstancePerEntity => true;
 
         /// <summary>
         /// The instance of the current tail, is null unless set

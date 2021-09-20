@@ -21,6 +21,7 @@ namespace TailLib
             TailGlobalNPC globalNpc = npc.GetGlobalNPC<TailGlobalNPC>();
             globalNpc.tail = new TailInstance(type, npc.Center, Layer.Npc, new Vector2(npc.direction, 1));
             globalNpc.tailActive = true;
+            TailGlobalNPC.ActiveTailNpcsList.Add(npc, globalNpc.tail);
             return globalNpc.tail;
         }
 

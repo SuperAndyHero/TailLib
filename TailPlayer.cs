@@ -55,7 +55,10 @@ namespace TailLib
                 if (tail != null)
                 {
                     if (_currentTailType != null && (tail.tailBase.GetType() != _currentTailType || (!previouslyActive && currentlyActive)))
+                    {
+                        tail.Remove();
                         tail = new TailInstance(_currentTailType, player.Center, Layer.Player, player.FacingDirection());
+                    }
 
                     tail.tailBones.Active = !player.dead && currentlyActive;
 

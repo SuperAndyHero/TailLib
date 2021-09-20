@@ -109,12 +109,25 @@ namespace TailLib
 
         private static void DrawTailTargetNpc(On.Terraria.Main.orig_DrawNPCs orig, Main self, bool behindTiles)
         {
-            Main.spriteBatch.End();
-            Main.spriteBatch.Begin(default, null, SamplerState.PointClamp, null, null, null);
-            Vector2 offset = Main.screenLastPosition - Main.screenPosition;//this mostly fixes a weird bug when the screen moves (Main.LocalPlayer.oldPosition - Main.LocalPlayer.position; works too)
-            Main.spriteBatch.Draw(NpcTailTarget, new Rectangle((int)offset.X, (int)(offset.Y * Main.LocalPlayer.gravDir), NpcTailTarget.Width, NpcTailTarget.Height), null, Color.White, 0, default, Main.LocalPlayer.gravDir == 1 ? SpriteEffects.None : SpriteEffects.FlipVertically, default);
-            Main.spriteBatch.End();
-            Main.spriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.PointClamp, null, null, null, Main.GameViewMatrix.TransformationMatrix);
+            if(Main.player[Main.myPlayer].gravDir != 1)
+            {
+                Vector2 offset = Main.screenLastPosition - Main.screenPosition;// Main.LocalPlayer.gravDir == 1f ? Main.screenLastPosition - Main.screenPosition : Main.screenPosition - Main.screenLastPosition;//this mostly fixes a weird bug when the screen moves (Main.LocalPlayer.oldPosition - Main.LocalPlayer.position; works too)
+                Vector2 center = NpcTailTarget.Size() / 2;
+                Main.spriteBatch.Draw(NpcTailTarget, offset + center, null, Color.White, 0, center, (3 - Main.GameViewMatrix.Zoom.X) * 0.5f, default, default);
+            }
+            else
+            {
+                Main.spriteBatch.End();
+                Main.spriteBatch.Begin(default, null, SamplerState.PointClamp, null, null, null);
+
+                Vector2 offset = Main.screenLastPosition - Main.screenPosition;// Main.LocalPlayer.gravDir == 1f ? Main.screenLastPosition - Main.screenPosition : Main.screenPosition - Main.screenLastPosition;//this mostly fixes a weird bug when the screen moves (Main.LocalPlayer.oldPosition - Main.LocalPlayer.position; works too)
+                Vector2 center = NpcTailTarget.Size() / 2;
+                Main.spriteBatch.Draw(NpcTailTarget, offset + center, null, Color.White, 0, center, 1f, default, default);
+                Main.spriteBatch.End();
+
+                Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, Main.DefaultSamplerState, DepthStencilState.None, RasterizerState.CullCounterClockwise, null, Main.GameViewMatrix.TransformationMatrix);
+            }
+
             orig(self, behindTiles);
         }
     }
@@ -548,7 +561,7 @@ namespace TailLib
 
                     Vector2 startLocation = tailBones.ropeSegments[0].ScreenPos - Main.ViewSize * 0.5f;
                     //int directionMult = (startLocation.X > tailBones.ropeSegments[tailBones.segmentCount - 1].ScreenPos.X - Main.ViewSize.X * 0.5f ? -1 : 1) * -(int)facingDirection.Y;
-                    int directionMult = tailBase.SpriteDirection() ? 1 : -1;
+                    int directionMult = (int)facingDirection.Y * (tailBase.SpriteDirection() ? 1 : -1);
                     Vector2[] texCor = directionMult == 1 ? texCoordL : texCoordR;
 
                     vertexPos[2] = new VertexPositionColorTexture(new Vector3(tailBones.ropeSegments[1].ScreenPos - Main.ViewSize / 2, 0), tailBase.GeometryColor(1), texCor[2]);
@@ -622,6 +635,7 @@ namespace TailLib
             if (SafeUpdateEquip(player)) 
                 player.GetModPlayer<TailPlayer>().CurrentTailType = TailType;
         }
+
         /// <summary>
         /// Use this as you would normally use UpdateAccessory.
         /// Return false to disable tail.
@@ -652,7 +666,7 @@ namespace TailLib
                 hasSpawned = true;
             }
 
-            npc.TailActive(SafeAI());
+            //npc.TailActive(SafeAI());
         }
 
         /// <summary>
