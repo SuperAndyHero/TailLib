@@ -61,9 +61,28 @@ namespace TailLib
 
         internal static void Load()
         {
-            On.Terraria.Main.DrawPlayers += DrawTailTargetPlayer;
+            On.Terraria.DataStructures.PlayerDrawLayers.DrawPlayer_RenderAllLayers += DrawTailTargetPlayer;
             On.Terraria.Main.DrawNPCs += DrawTailTargetNpc;
             Main.OnPreDraw += DrawTails;
+            On.Terraria.Main.DoUpdate += Main_DoUpdate;
+        }
+
+        private static void Main_DoUpdate(On.Terraria.Main.orig_DoUpdate orig, Main self, ref GameTime gameTime)
+        {
+            foreach (NPC npc in TailGlobalNPC.RemovalQueue)
+                TailGlobalNPC.ActiveTailNpcsList.Remove(npc);
+
+            TailGlobalNPC.RemovalQueue.Clear();
+
+            foreach (KeyValuePair<NPC, TailInstance> pair in TailGlobalNPC.ActiveTailNpcsList)
+            {
+                if (!pair.Key.active)
+                {
+                    pair.Value.Remove();
+                    TailGlobalNPC.RemovalQueue.Add(pair.Key);
+                }
+            }
+            orig(self, ref gameTime);
         }
 
         private static void DrawTails(GameTime obj)
@@ -99,12 +118,15 @@ namespace TailLib
             graphics.SetRenderTarget(null);
         }
 
-        private static void DrawTailTargetPlayer(On.Terraria.Main.orig_DrawPlayers orig, Main self)
+        private static void DrawTailTargetPlayer(On.Terraria.DataStructures.PlayerDrawLayers.orig_DrawPlayer_RenderAllLayers orig, ref Terraria.DataStructures.PlayerDrawSet drawinfo)
         {
-            Main.spriteBatch.Begin(default, default, SamplerState.PointClamp, default, default, default);
-            Main.spriteBatch.Draw(PlayerTailTarget, new Rectangle(0, 0, PlayerTailTarget.Width, PlayerTailTarget.Height), null, Color.White, 0, default, Main.LocalPlayer.gravDir == 1 ? SpriteEffects.None : SpriteEffects.FlipVertically, default);
-            Main.spriteBatch.End();
-             orig(self);
+            if (!Main.gameMenu)
+            {
+                //Main.spriteBatch.Begin(default, default, SamplerState.PointClamp, default, default, default);
+                Main.spriteBatch.Draw(PlayerTailTarget, new Rectangle(0, 0, PlayerTailTarget.Width, PlayerTailTarget.Height), null, Color.White, 0, default, Main.LocalPlayer.gravDir == 1 ? SpriteEffects.None : SpriteEffects.FlipVertically, default);
+                //Main.spriteBatch.End();
+            }
+            orig(ref drawinfo);
         }
 
         private static void DrawTailTargetNpc(On.Terraria.Main.orig_DrawNPCs orig, Main self, bool behindTiles)
@@ -591,7 +613,7 @@ namespace TailLib
                     effect.View = Main.GameViewMatrix.ZoomMatrix * Matrix.CreateScale(1, -1, 1);
 
                     effect.TextureEnabled = true;
-                    effect.Texture = ModContent.GetTexture(tailBase.Texture);
+                    effect.Texture = ModContent.Request<Texture2D>(tailBase.Texture).Value;
 
                     pass.Apply();
                     graphicsDevice.SetVertexBuffer(geometryBuffer);
@@ -662,7 +684,7 @@ namespace TailLib
         {
             if (!hasSpawned)
             {
-                npc.SetTail(TailType);
+                NPC.SetTail(TailType);
                 hasSpawned = true;
             }
 

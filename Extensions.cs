@@ -9,6 +9,7 @@ namespace TailLib
     /// <summary>
     /// Helper Extensions
     /// </summary>
+    [ExtendsFromMod]
     public static class Extensions
     {
         /// <summary>

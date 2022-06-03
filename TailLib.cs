@@ -10,25 +10,8 @@ namespace TailLib
 	{
         public override void Load()
         {
-            SetupEffect();
+            Main.QueueMainThreadAction(() => SetupEffect());
             TailHandler.Load();
-        }
-
-        public override void PostUpdateEverything()
-        {
-            foreach (NPC npc in TailGlobalNPC.RemovalQueue)
-                TailGlobalNPC.ActiveTailNpcsList.Remove(npc);
-
-            TailGlobalNPC.RemovalQueue.Clear();
-
-            foreach (KeyValuePair<NPC, TailInstance> pair in TailGlobalNPC.ActiveTailNpcsList)
-            {
-                if (!pair.Key.active)
-                {
-                    pair.Value.Remove();
-                    TailGlobalNPC.RemovalQueue.Add(pair.Key);
-                }
-            }
         }
 
         //TODO
@@ -41,7 +24,7 @@ namespace TailLib
         ////npc tail screenlag when upsidedown (only vertically)
 
         public static BasicEffect basicEffect;
-        private void SetupEffect()
+        private static void SetupEffect()
         {
             if (!Main.dedServ)
             {
