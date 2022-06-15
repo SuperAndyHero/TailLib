@@ -61,7 +61,7 @@ namespace TailLib
 
         internal static void Load()
         {
-            On.Terraria.DataStructures.PlayerDrawLayers.DrawPlayer_RenderAllLayers += DrawTailTargetPlayer;
+            //On.Terraria.DataStructures.PlayerDrawLayers.DrawPlayer_RenderAllLayers += DrawTailTargetPlayer;
             On.Terraria.Main.DrawNPCs += DrawTailTargetNpc;
             Main.OnPreDraw += DrawTails;
             On.Terraria.Main.DoUpdate += Main_DoUpdate;
@@ -118,39 +118,35 @@ namespace TailLib
             graphics.SetRenderTarget(null);
         }
 
-        private static void DrawTailTargetPlayer(On.Terraria.DataStructures.PlayerDrawLayers.orig_DrawPlayer_RenderAllLayers orig, ref Terraria.DataStructures.PlayerDrawSet drawinfo)
-        {
-            if (!Main.gameMenu)
-            {
-                //Main.spriteBatch.Begin(default, default, SamplerState.PointClamp, default, default, default);
-                Main.spriteBatch.Draw(PlayerTailTarget, new Rectangle(0, 0, PlayerTailTarget.Width, PlayerTailTarget.Height), null, Color.White, 0, default, Main.LocalPlayer.gravDir == 1 ? SpriteEffects.None : SpriteEffects.FlipVertically, default);
-                //Main.spriteBatch.End();
-            }
-            orig(ref drawinfo);
-        }
+        //broken due to pixelation issues, moved to npc draw hook
+        //private static void DrawTailTargetPlayer(On.Terraria.DataStructures.PlayerDrawLayers.orig_DrawPlayer_RenderAllLayers orig, ref Terraria.DataStructures.PlayerDrawSet drawinfo)
+        //{
+        //    if (!Main.gameMenu)
+        //    {
+        //        //Main.spriteBatch.Begin(default, default, SamplerState.PointClamp, default, default, default);
+        //        //Main.spriteBatch.Draw(PlayerTailTarget, new Rectangle(0, 0, PlayerTailTarget.Width, PlayerTailTarget.Height), null, Color.White, 0, default, Main.LocalPlayer.gravDir == 1 ? SpriteEffects.None : SpriteEffects.FlipVertically, default);
+        //        //Main.spriteBatch.End();
+        //    }
+        //    orig(ref drawinfo);
+        //}
 
         private static void DrawTailTargetNpc(On.Terraria.Main.orig_DrawNPCs orig, Main self, bool behindTiles)
         {
-            if(Main.player[Main.myPlayer].gravDir != 1)
-            {
-                Vector2 offset = Main.screenLastPosition - Main.screenPosition;// Main.LocalPlayer.gravDir == 1f ? Main.screenLastPosition - Main.screenPosition : Main.screenPosition - Main.screenLastPosition;//this mostly fixes a weird bug when the screen moves (Main.LocalPlayer.oldPosition - Main.LocalPlayer.position; works too)
-                Vector2 center = NpcTailTarget.Size() / 2;
-                Main.spriteBatch.Draw(NpcTailTarget, offset + center, null, Color.White, 0, center, (3 - Main.GameViewMatrix.Zoom.X) * 0.5f, default, default);
-            }
-            else
-            {
-                Main.spriteBatch.End();
-                Main.spriteBatch.Begin(default, null, SamplerState.PointClamp, null, null, null);
+            Main.spriteBatch.End();
 
-                Vector2 offset = Main.screenLastPosition - Main.screenPosition;// Main.LocalPlayer.gravDir == 1f ? Main.screenLastPosition - Main.screenPosition : Main.screenPosition - Main.screenLastPosition;//this mostly fixes a weird bug when the screen moves (Main.LocalPlayer.oldPosition - Main.LocalPlayer.position; works too)
-                Vector2 center = NpcTailTarget.Size() / 2;
-                Main.spriteBatch.Draw(NpcTailTarget, offset + center, null, Color.White, 0, center, 1f, default, default);
-                Main.spriteBatch.End();
+            Main.spriteBatch.Begin(default, null, SamplerState.PointClamp, null, null, null);
+            Main.spriteBatch.Draw(NpcTailTarget, new Rectangle(0, 0, PlayerTailTarget.Width, PlayerTailTarget.Height), null, Color.White, 0, default, Main.LocalPlayer.gravDir == 1 ? SpriteEffects.None : SpriteEffects.FlipVertically, default);
+            Main.spriteBatch.End();
 
-                Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, Main.DefaultSamplerState, DepthStencilState.None, RasterizerState.CullCounterClockwise, null, Main.GameViewMatrix.TransformationMatrix);
-            }
-
+            Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, Main.DefaultSamplerState, DepthStencilState.None, Main.Rasterizer, null, Main.GameViewMatrix.TransformationMatrix);
             orig(self, behindTiles);
+            Main.spriteBatch.End();
+
+            Main.spriteBatch.Begin(default, null, SamplerState.PointClamp, null, null, null);
+            Main.spriteBatch.Draw(PlayerTailTarget, new Rectangle(0, 0, PlayerTailTarget.Width, PlayerTailTarget.Height), null, Color.White, 0, default, Main.LocalPlayer.gravDir == 1 ? SpriteEffects.None : SpriteEffects.FlipVertically, default);
+            Main.spriteBatch.End();
+
+            Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, Main.DefaultSamplerState, DepthStencilState.None, Main.Rasterizer, null, Main.GameViewMatrix.TransformationMatrix);
         }
     }
 
@@ -581,7 +577,7 @@ namespace TailLib
                 {
                     VertexPositionColorTexture[] vertexPos = new VertexPositionColorTexture[geometryBuffer.VertexCount];
 
-                    Vector2 viewSize = (Main.ViewSize * 0.5f * Main.GameViewMatrix.Zoom);
+                    Vector2 viewSize = (Main.ViewSize * 0.5f);
                     Vector2 startLocation = tailBones.ropeSegments[0].ScreenPos - viewSize;
                     //int directionMult = (startLocation.X > tailBones.ropeSegments[tailBones.segmentCount - 1].ScreenPos.X - Main.ViewSize.X * 0.5f ? -1 : 1) * -(int)facingDirection.Y;
                     int directionMult = (int)facingDirection.Y * (tailBase.SpriteDirection() ? 1 : -1);
@@ -611,7 +607,7 @@ namespace TailLib
 
                     geometryBuffer.SetData(vertexPos);
 
-                    effect.View = Matrix.CreateScale(1, -1, 1);
+                    effect.View = Main.GameViewMatrix.ZoomMatrix * Matrix.CreateScale(1, -1, 1);
 
                     effect.TextureEnabled = true;
                     effect.Texture = ModContent.Request<Texture2D>(tailBase.Texture).Value;
