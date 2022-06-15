@@ -210,7 +210,7 @@ namespace TailLib
         /// Note: if you leave VertexDistance as null please set this
         /// Default: VertexDistance
         /// </summary>
-        public virtual int Width { get => VertexDistance; }
+        public virtual float Width { get => VertexDistance; }
 
 
 
@@ -218,13 +218,13 @@ namespace TailLib
         /// Distance between every vertex.
         /// VertexDistances can be used instead to set each distance specifically.
         /// </summary>
-        public virtual int VertexDistance { get => 5; }
+        public virtual float VertexDistance { get => 5; }
         /// <summary>
         /// Distance between each specific vertex.
         /// VertexDistance can be used instead to set every distance the same.
         /// Note: if this is overridded then VertexDistance is not used.
         /// </summary>
-        public virtual int[] VertexDistances { get; }
+        public virtual float[] VertexDistances { get; }
 
 
         /// <summary>
@@ -395,7 +395,7 @@ namespace TailLib
                 settledPoints = new Vector2[tailBase.VertexCount];
                 for (int i = 0; i < tailBase.VertexCount; i++)
                 {
-                    int dist = distances ? tailBase.VertexDistances[i] : tailBase.VertexDistance;
+                    float dist = distances ? tailBase.VertexDistances[i] : tailBase.VertexDistance;
                     Vector2 grav = gravities ? tailBase.VertexGravityForces[i] * tailBase.VertexGravityForce : tailBase.VertexGravityForce;
                     settledPoints[i] = (grav * dist) + (i > 0 ? settledPoints[i - 1] : Vector2.Zero);
                 }
@@ -581,12 +581,13 @@ namespace TailLib
                 {
                     VertexPositionColorTexture[] vertexPos = new VertexPositionColorTexture[geometryBuffer.VertexCount];
 
-                    Vector2 startLocation = tailBones.ropeSegments[0].ScreenPos - Main.ViewSize * 0.5f;
+                    Vector2 viewSize = (Main.ViewSize * 0.5f * Main.GameViewMatrix.Zoom);
+                    Vector2 startLocation = tailBones.ropeSegments[0].ScreenPos - viewSize;
                     //int directionMult = (startLocation.X > tailBones.ropeSegments[tailBones.segmentCount - 1].ScreenPos.X - Main.ViewSize.X * 0.5f ? -1 : 1) * -(int)facingDirection.Y;
                     int directionMult = (int)facingDirection.Y * (tailBase.SpriteDirection() ? 1 : -1);
                     Vector2[] texCor = directionMult == 1 ? texCoordL : texCoordR;
 
-                    vertexPos[2] = new VertexPositionColorTexture(new Vector3(tailBones.ropeSegments[1].ScreenPos - Main.ViewSize / 2, 0), tailBase.GeometryColor(1), texCor[2]);
+                    vertexPos[2] = new VertexPositionColorTexture(new Vector3(tailBones.ropeSegments[1].ScreenPos - viewSize, 0), tailBase.GeometryColor(1), texCor[2]);
 
                     vertexPos[1] = new VertexPositionColorTexture(new Vector3(startLocation + (Vector2.UnitY * (directionMult * (int)facingDirection.Y) * tailBase.Width), 0), tailBase.GeometryColor(0), texCor[1]);
                     vertexPos[0] = new VertexPositionColorTexture(new Vector3(startLocation + (Vector2.UnitY * -(directionMult * (int)facingDirection.Y) * tailBase.Width), 0), tailBase.GeometryColor(0), texCor[0]);
@@ -594,23 +595,23 @@ namespace TailLib
                     for (int i = 1; i < tailBones.segmentCount - 1; i++)//sets all vertexes besides the last two
                     {
                         int index = i * 3;
-                        vertexPos[index + 2] = new VertexPositionColorTexture(new Vector3(tailBones.ropeSegments[i + 1].ScreenPos - Main.ViewSize / 2, 0), tailBase.GeometryColor(i + 1), texCor[index + 2]);
+                        vertexPos[index + 2] = new VertexPositionColorTexture(new Vector3(tailBones.ropeSegments[i + 1].ScreenPos - viewSize, 0), tailBase.GeometryColor(i + 1), texCor[index + 2]);
 
                         float directionRot = (tailBones.ropeSegments[i + 1].posNow - tailBones.ropeSegments[i].posNow).ToRotation() + (float)Math.PI * 0.5f;
-                        Vector2 segLocation = tailBones.ropeSegments[i].ScreenPos - Main.ViewSize / 2;
+                        Vector2 segLocation = tailBones.ropeSegments[i].ScreenPos - viewSize;
                         vertexPos[index + 1] = new VertexPositionColorTexture(new Vector3(segLocation + (Vector2.UnitY.RotatedBy(directionRot + (Math.PI * 0.5f)) * tailBase.Width), 0), tailBase.GeometryColor(i), texCor[index + 1]);
                         vertexPos[index] = new VertexPositionColorTexture(new Vector3(segLocation + (Vector2.UnitY.RotatedBy(directionRot - (Math.PI * 0.5f)) * tailBase.Width), 0), tailBase.GeometryColor(i), texCor[index]);
                     }
 
                     //last two vert
                     float directionRot2 = (tailBones.ropeSegments[tailBones.segmentCount - 2].posNow - tailBones.ropeSegments[tailBones.segmentCount - 1].posNow).ToRotation() + (float)Math.PI * 0.5f;
-                    Vector2 segLocation2 = tailBones.ropeSegments[tailBones.segmentCount - 1].ScreenPos - Main.ViewSize / 2;
+                    Vector2 segLocation2 = tailBones.ropeSegments[tailBones.segmentCount - 1].ScreenPos - viewSize;
                     vertexPos[geometryBuffer.VertexCount - 2] = new VertexPositionColorTexture(new Vector3(segLocation2 + (Vector2.UnitY.RotatedBy(directionRot2 + (Math.PI * 0.5f)) * tailBase.Width), 0), tailBase.GeometryColor(tailBones.segmentCount - 1), texCor[geometryBuffer.VertexCount - 2]);
                     vertexPos[geometryBuffer.VertexCount - 1] = new VertexPositionColorTexture(new Vector3(segLocation2 + (Vector2.UnitY.RotatedBy(directionRot2 - (Math.PI * 0.5f)) * tailBase.Width), 0), tailBase.GeometryColor(tailBones.segmentCount - 1), texCor[geometryBuffer.VertexCount - 1]);
 
                     geometryBuffer.SetData(vertexPos);
 
-                    effect.View = Main.GameViewMatrix.ZoomMatrix * Matrix.CreateScale(1, -1, 1);
+                    effect.View = Matrix.CreateScale(1, -1, 1);
 
                     effect.TextureEnabled = true;
                     effect.Texture = ModContent.Request<Texture2D>(tailBase.Texture).Value;

@@ -13,7 +13,7 @@ namespace TailLib
         public bool Active = true;
 
         public int segmentCount;
-        public int segmentDistance;
+        public float segmentDistance;
 
         public int constraintRepetitions = 2;
         public float drag = 1f;
@@ -27,7 +27,7 @@ namespace TailLib
 
         //advanced variables
         public bool customDistances = false;
-        public List<int> segmentDistances;//length must match the segment count
+        public List<float> segmentDistances;//length must match the segment count
 
         public bool customGravity = false;
         public List<Vector2> forceGravities;//length must match the segment count
@@ -44,7 +44,7 @@ namespace TailLib
             Start();
         }
 
-        public VerletChainInstance(int SegCount, Vector2? StartPoint = null, Vector2? EndPoint = null, int SegDistance = 5, Vector2? Grav = null)
+        public VerletChainInstance(int SegCount, Vector2? StartPoint = null, Vector2? EndPoint = null, float SegDistance = 5, Vector2? Grav = null)
         {
             segmentCount = SegCount;
             segmentDistance = SegDistance;
@@ -58,9 +58,9 @@ namespace TailLib
             Start(EndPoint != null);
         }
 
-        public VerletChainInstance(int SegCount, Vector2? StartPoint = null, Vector2? EndPoint = null, int SegDistance = 5, Vector2? Grav = null,
+        public VerletChainInstance(int SegCount, Vector2? StartPoint = null, Vector2? EndPoint = null, float SegDistance = 5, Vector2? Grav = null,
             bool CustomGravs = false, List<Vector2> SegGravs = null,
-            bool CustomDists = false, List<int> SegDists = null)
+            bool CustomDists = false, List<float> SegDists = null)
         {
             segmentCount = SegCount;
             segmentDistance = SegDistance;
@@ -97,7 +97,7 @@ namespace TailLib
                 }
                 else
                 {
-                    int distance = customDistances ? segmentDistances[i] : segmentDistance;
+                    float distance = customDistances ? segmentDistances[i] : segmentDistance;
                     Vector2 spawnGrav = customGravity ? forceGravities[i] * forceGravity : forceGravity;
                     if (spawnGrav != Vector2.Zero)
                         nextRopePoint += Vector2.Normalize(spawnGrav) * distance;

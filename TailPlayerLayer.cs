@@ -14,7 +14,7 @@ namespace TailLib
 {
     public class TailPlayerLayer : PlayerDrawLayer
     {
-        public override Position GetDefaultPosition() => new BeforeParent(PlayerDrawLayers.Head);
+        public override Position GetDefaultPosition() => new BeforeParent(PlayerDrawLayers.Tails);
 
         protected override void Draw(ref PlayerDrawSet drawInfo)
         {
@@ -26,7 +26,7 @@ namespace TailLib
                     //if (drawInfo.drawPlayer.dead) return;//player is never dead on main menu 
                     Texture2D texture = ModContent.Request<Texture2D>(tailPlayer.playerMenuTexture).Value;
                     int frameSize = texture.Height / 20;//what??? was left over from my orignal player layer base, breaks if removed
-                    DrawData data = new DrawData(texture, (drawInfo.Position - Main.screenPosition) + (tailPlayer.playerMenuTexOffset * 0.5f), null, Color.White, 0f, new Vector2(texture.Width, frameSize), 1f, SpriteEffects.FlipHorizontally, 0);
+                    DrawData data = new DrawData(texture, (drawInfo.Center - Main.screenPosition) + (tailPlayer.playerMenuTexOffset * 0.5f), null, Color.White, 0f, new Vector2(texture.Width, frameSize), 1f, SpriteEffects.FlipHorizontally, 0);
                     drawInfo.DrawDataCache.Add(data);
                 }
             }

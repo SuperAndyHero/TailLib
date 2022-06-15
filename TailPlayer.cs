@@ -24,7 +24,7 @@ namespace TailLib
         /// <summary>
         /// The instance of the current tail, is null unless set
         /// </summary>
-        public TailInstance tail = null;
+        private TailInstance tail = null;
 
         /// <summary>
         /// If the tail is currently active
@@ -89,7 +89,8 @@ namespace TailLib
                 if (curBase != null)
                 {
                     playerMenuTexture = curBase.Texture;
-                    playerMenuTexOffset = new Vector2(2 * curBase.WorldOffset.X, curBase.WorldOffset.Y);
+                    Texture2D texture = ModContent.Request<Texture2D>(playerMenuTexture).Value;
+                    playerMenuTexOffset = new Vector2(2 * curBase.WorldOffset.X, (curBase.WorldOffset.Y - (curBase.TexPosOffset.Y)) - texture.Height) - new Vector2(1, -1);
                 }
             }
             
