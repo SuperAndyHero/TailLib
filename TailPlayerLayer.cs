@@ -21,13 +21,20 @@ namespace TailLib
             //this is for drawing the tail on the menu
             if (Main.gameMenu && drawInfo.drawPlayer.TryGetModPlayer<TailPlayer>(out TailPlayer tailPlayer))
             {
-                if(tailPlayer.playerMenuTexture != null)
+                if(tailPlayer.currentMenuBase != null)
                 {
                     //if (drawInfo.drawPlayer.dead) return;//player is never dead on main menu 
-                    Texture2D texture = ModContent.Request<Texture2D>(tailPlayer.playerMenuTexture).Value;
-                    int frameSize = texture.Height / 20;//what??? was left over from my orignal player layer base, breaks if removed
-                    DrawData data = new DrawData(texture, (drawInfo.Center - Main.screenPosition) + (tailPlayer.playerMenuTexOffset * 0.5f), null, Color.White, 0f, new Vector2(texture.Width, frameSize), 1f, SpriteEffects.FlipHorizontally, 0);
-                    drawInfo.DrawDataCache.Add(data);
+                    var curBase = tailPlayer.currentMenuBase;
+                    if (curBase.PreDrawMenuLayer(ref drawInfo))
+                    {
+                        Texture2D texture = ModContent.Request<Texture2D>(curBase.Texture).Value;
+                        int frameSize = texture.Height / 20;//what??? was left over from my orignal player layer base, breaks if removed
+                        Vector2 playerMenuTexOffset = new Vector2(2 * curBase.WorldOffset.X, (curBase.WorldOffset.Y - texture.Height) - curBase.TexPosOffset.Y) - new Vector2(1, 1);
+
+                        DrawData data = new DrawData(texture, (drawInfo.Center - Main.screenPosition) + (playerMenuTexOffset * 0.5f), null, Color.White, 0f, new Vector2(texture.Width, frameSize), 1f, SpriteEffects.FlipHorizontally, 0);
+                        drawInfo.DrawDataCache.Add(data);
+                    }
+                    curBase.PostDrawMenuLayer(ref drawInfo);
                 }
             }
         }

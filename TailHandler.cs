@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Terraria;
+using Terraria.DataStructures;
 using Terraria.ModLoader;
 using static TailLib.TailHandler;
 
@@ -266,6 +267,9 @@ namespace TailLib
         /// </summary>
         /// <param name="spriteBatch"></param>
         public virtual void DrawSprites(SpriteBatch spriteBatch) { }
+
+        public virtual bool PreDrawMenuLayer(ref PlayerDrawSet drawInfo) => true;
+        public virtual void PostDrawMenuLayer(ref PlayerDrawSet drawInfo) { }
 
 
 

@@ -70,30 +70,24 @@ namespace TailLib
             }
         }
 
-        public string playerMenuTexture = null;
-        public Vector2 playerMenuTexOffset = Vector2.Zero;
+        public Tailbase currentMenuBase = null;
         public override void ResetEffects()
         {
             if (Main.gameMenu)
             {
-                Type curType = null;
+                Type newType = null;
 
                 foreach (Item item in Player.armor)
                     if (item.ModItem is TailItem)
-                        curType = (item.ModItem as TailItem).TailType;
+                        newType = (item.ModItem as TailItem).TailType;
 
-                Tailbase curBase = null;
-                if(curType != null)
-                    curBase = (Tailbase)Activator.CreateInstance(curType);
-
-                if (curBase != null)
-                {
-                    playerMenuTexture = curBase.Texture;
-                    Texture2D texture = ModContent.Request<Texture2D>(playerMenuTexture).Value;
-                    playerMenuTexOffset = new Vector2(2 * curBase.WorldOffset.X, (curBase.WorldOffset.Y - (curBase.TexPosOffset.Y)) - texture.Height) - new Vector2(1, -1);
-                }
+                if (newType != null && (currentMenuBase == null || currentMenuBase.GetType() != newType))
+                    currentMenuBase = (Tailbase)Activator.CreateInstance(newType);
             }
-            
+            else
+                currentMenuBase = null;
+
+
 
             if (previouslyActive && !currentlyActive /*&& null check*/)
                 tail.Remove();
