@@ -28,8 +28,8 @@ namespace TailLib
                     if (curBase.PreDrawMenuLayer(ref drawInfo))
                     {
                         Texture2D texture = ModContent.Request<Texture2D>(curBase.Texture).Value;
-                        int frameSize = texture.Height / 20;//what??? was left over from my orignal player layer base, breaks if removed
-                        Vector2 playerMenuTexOffset = new Vector2(2 * curBase.WorldOffset.X, (curBase.WorldOffset.Y - texture.Height) - curBase.TexPosOffset.Y) - new Vector2(1, 1);
+                        int frameSize = texture.Height / 20;//was left over from my orignal player layer base, breaks if removed
+                        Vector2 playerMenuTexOffset = new Vector2((curBase.WorldOffset.X - curBase.TexPosOffset.X) - (drawInfo.drawPlayer.width / 2), (curBase.WorldOffset.Y - texture.Height) - curBase.TexPosOffset.Y) - new Vector2(3, 0) + curBase.DrawMenuOffset();
 
                         DrawData data = new DrawData(texture, (drawInfo.Center - Main.screenPosition) + (playerMenuTexOffset * 0.5f), null, Color.White, 0f, new Vector2(texture.Width, frameSize), 1f, SpriteEffects.FlipHorizontally, 0);
                         drawInfo.DrawDataCache.Add(data);

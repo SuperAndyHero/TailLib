@@ -62,7 +62,7 @@ namespace TailLib
 
                     tail.tailBones.Active = !Player.dead && currentlyActive;
 
-                    tail.Update(Player.Center + new Vector2(0, Player.gfxOffY), Player.FacingDirection());
+                    tail.Update(Player.Center + new Vector2(/*fixes centering issue*/ -0.5f, Player.gfxOffY), Player.FacingDirection());
                     tail.alpha = (255 - Player.immuneAlpha) * 0.003921568627f;//for the blinking when damaged
                 }
                 else if (_currentTailType != null)

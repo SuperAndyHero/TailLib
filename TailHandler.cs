@@ -268,6 +268,7 @@ namespace TailLib
         /// <param name="spriteBatch"></param>
         public virtual void DrawSprites(SpriteBatch spriteBatch) { }
 
+        public virtual Vector2 DrawMenuOffset() => Vector2.Zero;
         public virtual bool PreDrawMenuLayer(ref PlayerDrawSet drawInfo) => true;
         public virtual void PostDrawMenuLayer(ref PlayerDrawSet drawInfo) { }
 
