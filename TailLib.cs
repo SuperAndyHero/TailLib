@@ -23,16 +23,16 @@ namespace TailLib
         ////list not cleared when player leaves
         ////npc tail screenlag when upsidedown (only vertically)
 
-        public static BasicEffect basicEffect;
+        public static BasicEffect BasicEffect;
         private static void SetupEffect()
         {
             if (!Main.dedServ)
             {
-                basicEffect = new BasicEffect(Main.graphics.GraphicsDevice)
+                BasicEffect = new BasicEffect(Main.graphics.GraphicsDevice)
                 {
                     VertexColorEnabled = true,
                 };
-                basicEffect.Projection = Matrix.CreateOrthographic(Main.screenWidth, Main.screenHeight, 0, 1000);
+                BasicEffect.Projection = Matrix.CreateOrthographic(Main.screenWidth, Main.screenHeight, 0, 1000);
             }
         }
     }

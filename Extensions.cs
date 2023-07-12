@@ -20,7 +20,7 @@ namespace TailLib
         public static TailInstance SetTail(this NPC npc, Type type)
         {
             TailGlobalNPC globalNpc = npc.GetGlobalNPC<TailGlobalNPC>();
-            globalNpc.tail = new TailInstance(type, npc.Center, Layer.Npc, new Vector2(npc.direction, 1));
+            globalNpc.tail = new TailInstance(type, npc.Center, Layer.Npc, npc, 1);
             globalNpc.tailActive = true;
             TailGlobalNPC.ActiveTailNpcsList.Add(npc, globalNpc.tail);
             return globalNpc.tail;
@@ -105,5 +105,8 @@ namespace TailLib
         }
 
         #endregion
+
+        public static Vector3 Transform(this Vector3 vec3, Matrix matrix) => 
+            Vector3.Transform(vec3, matrix);
     }
 }

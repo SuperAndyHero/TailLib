@@ -1,0 +1,2 @@
+having frameskip off causes random weird offsets for a single frame
+look into combining npc and player targets, may be possible to reuse a vanilla target?

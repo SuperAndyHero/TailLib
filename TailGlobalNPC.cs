@@ -35,6 +35,7 @@ namespace TailLib
             {
                 tail.tailBones.Active = npc.active && tailActive;
                 tail.Update(npc.Center + new Vector2(0, npc.gfxOffY), new Vector2(npc.direction, 1));
+                tail.alpha = npc.Opacity;//so tail matches npc opacity
             }
 
             return base.PreAI(npc);
@@ -45,6 +46,12 @@ namespace TailLib
             if (tailActive)
                 tail.Remove();
             return base.CheckDead(npc);
+        }
+
+        public override void Unload()
+        {
+            RemovalQueue = null;
+            ActiveTailNpcsList = null;
         }
     }
 }

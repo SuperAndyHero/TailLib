@@ -13,6 +13,9 @@ using System.Collections.Generic;
 using TailLib;
 using Terraria.ModLoader.IO;
 using static TailLib.TailHandler;
+using Terraria.GameContent;
+using Terraria.Graphics.Shaders;
+using static Terraria.GameContent.Animations.Actions;
 
 namespace TailLib
 {
@@ -48,25 +51,29 @@ namespace TailLib
                 currentlyActive = true; }
         }
 
+        public int DyeItemType = -1;
+
         public override void PreUpdate()
         {
             if (currentlyActive)
             {
                 if (tail != null)
                 {
+                    //if current tailType is different than the type of the active tail
                     if (_currentTailType != null && (tail.tailBase.GetType() != _currentTailType || (!previouslyActive && currentlyActive)))
                     {
                         tail.Remove();
-                        tail = new TailInstance(_currentTailType, Player.Center, Layer.Player, Player.FacingDirection());
+                        tail = new TailInstance(_currentTailType, Player.Center, Layer.Player, Player, (int)Player.gravDir);
                     }
 
                     tail.tailBones.Active = !Player.dead && currentlyActive;
 
                     tail.Update(Player.Center + new Vector2(/*fixes centering issue*/ -0.5f, Player.gfxOffY), Player.FacingDirection());
                     tail.alpha = (255 - Player.immuneAlpha) * 0.003921568627f;//for the blinking when damaged
+                    tail.armorShaderData = GameShaders.Armor.GetShaderFromItemId(DyeItemType);//GameShaders.Armor.GetShaderFromItemId(ItemID.MushroomDye);
                 }
                 else if (_currentTailType != null)
-                    tail = new TailInstance(_currentTailType, Player.Center, Layer.Player, Player.FacingDirection());
+                    tail = new TailInstance(_currentTailType, Player.Center, Layer.Player, Player, (int)Player.gravDir);
             }
         }
 
@@ -100,17 +107,22 @@ namespace TailLib
         /// singleplayer and client only, convenient place to clear all lists
         /// </summary>
         /// <param name="player"></param>
-        public override void OnEnterWorld(Player player)
+        public override void OnEnterWorld()
         {
             TailHandler.PlayerTailList.Clear();
             TailHandler.NpcTailList.Clear();
         }
 
-        public override void PlayerDisconnect(Player player)
+        public override void PlayerDisconnect()
         {
-            TailPlayer tailPlayer = player.GetModPlayer<TailPlayer>();
+            TailPlayer tailPlayer = Player.GetModPlayer<TailPlayer>();
             if (tailPlayer.tail != null)
                 tailPlayer.tail.Remove();
+        }
+
+        public override void Unload()
+        {
+            tail = null;
         }
 
         //public override void ModifyDrawLayers(List<PlayerLayer> layers)
