@@ -149,7 +149,7 @@ namespace TailLib
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        public virtual Color SpineColor(int index) => Color.Blue; // GetLightColor(tailInstance.tailBones.ropeSegments[index].posNow);
+        public virtual Color SpineColor(int index) => Color.White; // GetLightColor(tailInstance.tailBones.ropeSegments[index].posNow);
 
 
 

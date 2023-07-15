@@ -108,7 +108,7 @@ namespace TailLib
             //if (tailBase.VertexCount > 1)
             if (!Main.dedServ)
             {
-                spineBuffer = !tailBase.SpineEnabled ? null : new VertexBuffer(Main.graphics.GraphicsDevice, typeof(VertexPositionColor), tailBase.VertexCount, BufferUsage.WriteOnly);
+                spineBuffer = !tailBase.SpineEnabled ? null : new VertexBuffer(Main.graphics.GraphicsDevice, typeof(VertexPositionColorTexture), tailBase.VertexCount, BufferUsage.WriteOnly);
 
                 if (tailBase.GeometryEnabled)
                 {
@@ -207,13 +207,36 @@ namespace TailLib
         //}
 
         /// <summary>
+        /// applies the armor shader, call this before each drawn sprite, unless using DrawShaderSprite
+        /// </summary>
+        public void ApplyShader(DrawData drawdata)
+        {
+            if (armorShaderData == null)
+                return;
+
+            armorShaderData.Apply(entity, drawdata);
+        }
+
+        /// <summary>
+        /// use this to draw a sprite and apply the shader at the same time
+        /// </summary>
+        public void DrawShaderSprite(SpriteBatch spriteBatch, DrawData drawdata)
+        {
+            ApplyShader(drawdata);
+            drawdata.Draw(spriteBatch);
+        }
+
+        /// <summary>
         /// allows the tailbase to draw custom sprites
         /// </summary>
         /// <param name="spriteBatch"></param>
         public void DrawSprites(SpriteBatch spriteBatch)
         {
             if (tailBones.Active)
+            {
+                //in theory you can call pass.apply on any shader you want before drawing your sprite to set a specific/custom shader
                 tailBase.DrawSprites(spriteBatch);
+            }
         }
 
         /// <summary>
@@ -238,12 +261,12 @@ namespace TailLib
 
             bool useArmorShader = armorShaderData != null;//maybe move into if check? or add param for above method
 
+            Matrix viewMatrix = useArmorShader ? Main.GameViewMatrix.TransformationMatrix * Matrix.CreateScale(0.25f) : Main.GameViewMatrix.ZoomMatrix * Matrix.CreateScale(1, -1, 1);
+            Vector2 viewSizeOffset = useArmorShader ? Vector2.Zero : (Main.ViewSize * 0.5f);
+
             if (tailBase.GeometryEnabled)
             {
                 VertexPositionColorTexture[] vertexPos = new VertexPositionColorTexture[geometryBuffer.VertexCount];
-
-                Matrix viewMatrix = useArmorShader ? Main.GameViewMatrix.TransformationMatrix * Matrix.CreateScale(0.25f) :  Main.GameViewMatrix.ZoomMatrix * Matrix.CreateScale(1, -1, 1);
-                Vector2 viewSizeOffset = useArmorShader ? Vector2.Zero : (Main.ViewSize * 0.5f);
 
                 Vector2 startLocation = tailBones.ropeSegments[0].ScreenPos - viewSizeOffset;
                 //int directionMult = (startLocation.X > tailBones.ropeSegments[tailBones.segmentCount - 1].ScreenPos.X - Main.ViewSize.X * 0.5f ? -1 : 1) * -(int)facingDirection.Y;
@@ -291,26 +314,35 @@ namespace TailLib
                 graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, geometryBuffer.VertexCount, 0, geometryIndexBuffer.IndexCount / 3);
             }
 
-            //if (tailBase.SpineEnabled)
-            //{
-            //    VertexPositionColor[] vertexPos = new VertexPositionColor[spineBuffer.VertexCount];
+            if (tailBase.SpineEnabled)
+            {
+                VertexPositionColorTexture[] vertexPos = new VertexPositionColorTexture[spineBuffer.VertexCount];//vanilla dyes need a texture coord value
 
-            //    for (int i = 0; i < vertexPos.Length; i++)
-            //        vertexPos[i] = new VertexPositionColor(new Vector3(tailBones.ropeSegments[i].ScreenPos - Main.ViewSize / 2, 0), tailBase.SpineColor(i));
+                for (int i = 0; i < vertexPos.Length; i++)
+                    vertexPos[i] = new VertexPositionColorTexture(new Vector3(tailBones.ropeSegments[i].ScreenPos - viewSizeOffset, 0).Transform(viewMatrix), tailBase.SpineColor(i), Vector2.Zero);
 
-            //    spineBuffer.SetData(vertexPos);
+                spineBuffer.SetData(vertexPos);
 
-            //    effect.TextureEnabled = false;//this or a second effect is needed
-            //    effect.View = Main.GameViewMatrix.ZoomMatrix * Matrix.CreateScale(1, -1, 1);
+                if (useArmorShader)
+                {
+                    graphicsDevice.Textures[0] = Terraria.GameContent.TextureAssets.BlackTile.Value;
+                    armorShaderData.Apply(entity, new DrawData(ModContent.Request<Texture2D>(tailBase.Texture).Value, new Rectangle(0, 0, 4, 4), Color.White));//rect does not matter
+                }
+                else//assumes basiceffect
+                {
+                    basiceffect.TextureEnabled = false;
+                    basiceffectpass.Apply();
+                }
 
-            //    pass.Apply();
-            //    graphicsDevice.SetVertexBuffer(spineBuffer);
-            //    graphicsDevice.DrawPrimitives(PrimitiveType.LineStrip, 0, spineBuffer.VertexCount - 1);
-            //}
+                graphicsDevice.SetVertexBuffer(spineBuffer);
+                graphicsDevice.DrawPrimitives(PrimitiveType.LineStrip, 0, spineBuffer.VertexCount - 1);
+            }
         }
 
         private Vector2[] TexCoords(int dir, Vector2[] settledPoints, Vector2 smallestSize, Vector2 largestSize)
         {
+            //this pre-calculates each vertex position and gets it's texture coords, and is only ran when the tail is being created
+
             Vector2[] texCoords = new Vector2[((tailBase.VertexCount - 1) * 3) + 2];
 
             Vector2 TexCoordConvert(Vector2 realPosition)

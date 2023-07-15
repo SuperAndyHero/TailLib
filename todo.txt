@@ -1,2 +1,11 @@
 having frameskip off causes random weird offsets for a single frame
 look into combining npc and player targets, may be possible to reuse a vanilla target?
+make shaders draw on main menu
+forces on starry tail need to be redone
+
+Needed before release:
+item icons
+
+Done:
+fix spine drawing
+fix sprite drawing (mods that use it need to call a specific method)
