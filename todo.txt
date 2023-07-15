@@ -4,12 +4,14 @@ forces on starry tail need to be redone
 forces on shark tail need a major rewrite
 add wireframe to the chain sim
 look into having mod player check item slots for tail items instead of items doing it themselves (cleaner and faster)
-add a config
+add more config options
+shark tail is a bit too low, or needs sprite change
 
 Needed before release:
 item icons
 Very large fox tail
 maybe implement vanilla tails
+FIX GRAVITY (use transformation matrix instead of zoom matrix, and implement cullmode none)
 
 Done:
 fix spine drawing

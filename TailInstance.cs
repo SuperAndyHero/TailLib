@@ -273,20 +273,34 @@ namespace TailLib
 
                 Vector2 startLocation = tailBones.ropeSegments[0].ScreenPos - viewSizeOffset;
                 //int directionMult = (startLocation.X > tailBones.ropeSegments[tailBones.segmentCount - 1].ScreenPos.X - Main.ViewSize.X * 0.5f ? -1 : 1) * -(int)facingDirection.Y;
-                int directionMult = (int)facingDirection.Y * (tailBase.SpriteDirection() ? 1 : -1);
+                int facingDir = (tailBase.SpriteDirection() ? 1 : -1);
+                int directionMult = (int)facingDirection.Y * facingDir;
                 Vector2[] texCor = directionMult == 1 ? texCoordL : texCoordR;
+
+                //this angle allows the base to tilt if the angle is too extreme
+                const float rotateAngle = (float)Math.PI * 0.175f;//0.15-0.2 is a good range, this is the limit and range it tilts
+                float seg0to1angle = (facingDir == 1 ? 
+                    (tailBones.ropeSegments[0].posNow - tailBones.ropeSegments[1].posNow) : 
+                    (tailBones.ropeSegments[1].posNow - tailBones.ropeSegments[0].posNow)).ToRotation();
+                bool aboveAngle = seg0to1angle > rotateAngle;
+                bool belowAngle = seg0to1angle < -rotateAngle;
+                float topStartRot = aboveAngle ? seg0to1angle - (Math.Sign(seg0to1angle) * rotateAngle) : 0;
+                float bottomStartRot = belowAngle ? seg0to1angle - (Math.Sign(seg0to1angle) * rotateAngle) : 0;
 
                 vertexPos[2] = new VertexPositionColorTexture(new Vector3(tailBones.ropeSegments[1].ScreenPos - viewSizeOffset, 0).Transform(viewMatrix), tailBase.GeometryColor(1), texCor[2]);
 
-                vertexPos[1] = new VertexPositionColorTexture(new Vector3(startLocation + (Vector2.UnitY * (directionMult * (int)facingDirection.Y) * tailBase.Width), 0).Transform(viewMatrix), tailBase.GeometryColor(0), texCor[1]);
-                vertexPos[0] = new VertexPositionColorTexture(new Vector3(startLocation + (Vector2.UnitY * -(directionMult * (int)facingDirection.Y) * tailBase.Width), 0).Transform(viewMatrix), tailBase.GeometryColor(0), texCor[0]);
+                vertexPos[1] = new VertexPositionColorTexture(new Vector3(startLocation + (Vector2.UnitY.RotatedBy(bottomStartRot + (topStartRot * 0.5f)) * (directionMult * (int)facingDirection.Y) * tailBase.Width), 0).Transform(viewMatrix), tailBase.GeometryColor(0), texCor[1]);
+                vertexPos[0] = new VertexPositionColorTexture(new Vector3(startLocation + (Vector2.UnitY.RotatedBy(topStartRot + (bottomStartRot * 0.5f)) * -(directionMult * (int)facingDirection.Y) * tailBase.Width), 0).Transform(viewMatrix), tailBase.GeometryColor(0), texCor[0]);
 
                 for (int i = 1; i < tailBones.segmentCount - 1; i++)//sets all vertexes besides the last two
                 {
                     int index = i * 3;
                     vertexPos[index + 2] = new VertexPositionColorTexture(new Vector3(tailBones.ropeSegments[i + 1].ScreenPos - viewSizeOffset, 0).Transform(viewMatrix), tailBase.GeometryColor(i + 1), texCor[index + 2]);
 
-                    float directionRot = (tailBones.ropeSegments[i + 1].posNow - tailBones.ropeSegments[i].posNow).ToRotation() + (float)Math.PI * 0.5f;
+                    float directionRot = 
+                        ((tailBones.ropeSegments[i + 1].posNow - tailBones.ropeSegments[i].posNow) + 
+                        (tailBones.ropeSegments[i].posNow - tailBones.ropeSegments[i - 1].posNow)).ToRotation() + 
+                        (float)Math.PI * 0.5f;
                     Vector2 segLocation = tailBones.ropeSegments[i].ScreenPos - viewSizeOffset;
                     vertexPos[index + 1] = new VertexPositionColorTexture(new Vector3(segLocation + (Vector2.UnitY.RotatedBy(directionRot + (Math.PI * 0.5f)) * tailBase.Width), 0).Transform(viewMatrix), tailBase.GeometryColor(i), texCor[index + 1]);
                     vertexPos[index] = new VertexPositionColorTexture(new Vector3(segLocation + (Vector2.UnitY.RotatedBy(directionRot - (Math.PI * 0.5f)) * tailBase.Width), 0).Transform(viewMatrix), tailBase.GeometryColor(i), texCor[index]);
@@ -369,7 +383,7 @@ namespace TailLib
 
                 texCoords[index + 2] = TexCoordConvert(settledPoints[i + 1]);
 
-                float directionRot = (settledPoints[i + 1] - settledPoints[i]).ToRotation() + ((float)Math.PI * 0.5f);
+                float directionRot = ((settledPoints[i + 1] - settledPoints[i]) + (settledPoints[i] - settledPoints[i - 1])).ToRotation() + ((float)Math.PI * 0.5f);
 
                 Vector2 segLocationA = settledPoints[i] + (Vector2.UnitY.RotatedBy(directionRot + (Math.PI * 0.5f * dir)) * tailBase.Width);
                 texCoords[index + 1] = TexCoordConvert(segLocationA);

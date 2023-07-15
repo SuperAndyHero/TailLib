@@ -1,0 +1,10 @@
+Configs: {
+	Config: {
+		DisplayName: Config
+
+		ShowWireFrame: {
+			Label: Show Wire Frame
+			Tooltip: ""
+		}
+	}
+}
