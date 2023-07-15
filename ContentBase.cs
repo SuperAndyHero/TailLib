@@ -19,6 +19,8 @@ namespace TailLib
         protected TailItem(Type tailType) =>
             TailType = tailType;
 
+        //if setting the tail is moved to mod player, this needs a property for if the tail is active
+
         public sealed override void UpdateEquip(Player player)
         {
             if (SafeUpdateEquip(player))
@@ -31,11 +33,11 @@ namespace TailLib
         public int GetAppliedDyeItem(Player player)
         {
             int dyeType = -1;
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < player.armor.Length; i++)
             {
-                if (player.armor[i + 3] == Item)
+                if (player.armor[i] == Item)
                 {
-                    Item dyeitem = player.dye[i + 3];
+                    Item dyeitem = player.dye[i];
 
                     if (dyeitem != null && !dyeitem.IsAir)
                         dyeType = dyeitem.type;

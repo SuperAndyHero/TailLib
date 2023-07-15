@@ -84,9 +84,20 @@ namespace TailLib
             {
                 Type newType = null;
 
-                foreach (Item item in Player.armor)
-                    if (item.ModItem is TailItem)
-                        newType = (item.ModItem as TailItem).TailType;
+                //todo: this could be used in place of the item setting these itself, not just on the main menu
+                for (int i = 0; i < Player.armor.Length; i++)
+                {
+                    if (Player.armor[i].ModItem is TailItem)
+                    {
+                        newType = (Player.armor[i].ModItem as TailItem).TailType;
+
+                        Item dyeitem = Player.dye[i];
+                        if (dyeitem != null && !dyeitem.IsAir)
+                            DyeItemType = dyeitem.type;
+
+                        break;
+                    }
+                }
 
                 if (newType != null && (currentMenuBase == null || currentMenuBase.GetType() != newType))
                     currentMenuBase = (Tailbase)Activator.CreateInstance(newType);
