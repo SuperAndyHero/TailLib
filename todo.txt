@@ -1,10 +1,15 @@
 having frameskip off causes random weird offsets for a single frame
 look into combining npc and player targets, may be possible to reuse a vanilla target?
 forces on starry tail need to be redone
+forces on shark tail need a major rewrite
+add wireframe to the chain sim
 look into having mod player check item slots for tail items instead of items doing it themselves (cleaner and faster)
+add a config
 
 Needed before release:
 item icons
+Very large fox tail
+maybe implement vanilla tails
 
 Done:
 fix spine drawing

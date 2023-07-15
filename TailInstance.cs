@@ -246,7 +246,7 @@ namespace TailLib
         /// <param name="effect"></param>
         /// <param name="pass"></param>
         /// <param name="graphicsDevice"></param>
-        public void DrawGeometry()
+        public void DrawGeometry(bool wireframe)
         {
             if (!tailBones.Active)// && tailBones.segmentCount > 1)
                 return;
@@ -259,13 +259,16 @@ namespace TailLib
 
             tailBase.PreDrawGeometry(armorShaderData, entity, basiceffect, basiceffectpass, graphicsDevice);
 
-            bool useArmorShader = armorShaderData != null;//maybe move into if check? or add param for above method
+            bool useArmorShader = armorShaderData != null && !wireframe;//maybe add this as a param to predrawgeometry
 
             Matrix viewMatrix = useArmorShader ? Main.GameViewMatrix.TransformationMatrix * Matrix.CreateScale(0.25f) : Main.GameViewMatrix.ZoomMatrix * Matrix.CreateScale(1, -1, 1);
             Vector2 viewSizeOffset = useArmorShader ? Vector2.Zero : (Main.ViewSize * 0.5f);
 
             if (tailBase.GeometryEnabled)
             {
+                if (wireframe)
+                    graphicsDevice.RasterizerState.FillMode = FillMode.WireFrame;
+
                 VertexPositionColorTexture[] vertexPos = new VertexPositionColorTexture[geometryBuffer.VertexCount];
 
                 Vector2 startLocation = tailBones.ropeSegments[0].ScreenPos - viewSizeOffset;
@@ -305,13 +308,16 @@ namespace TailLib
                 else//assumes basiceffect
                 {
                     basiceffect.TextureEnabled = true;
-                    basiceffect.Texture = ModContent.Request<Texture2D>(tailBase.Texture).Value;
+                    basiceffect.Texture = wireframe ? Terraria.GameContent.TextureAssets.BlackTile.Value : ModContent.Request<Texture2D>(tailBase.Texture).Value;
                     basiceffectpass.Apply();
                 }
 
                 graphicsDevice.SetVertexBuffer(geometryBuffer);
                 graphicsDevice.Indices = geometryIndexBuffer;
                 graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, geometryBuffer.VertexCount, 0, geometryIndexBuffer.IndexCount / 3);
+                
+                if(wireframe)
+                    graphicsDevice.RasterizerState.FillMode = FillMode.Solid;
             }
 
             if (tailBase.SpineEnabled)

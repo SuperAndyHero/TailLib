@@ -97,7 +97,11 @@ namespace TailLib
             graphics.Clear(Color.Transparent);
 
             foreach (TailInstance tail in PlayerTailList)
-                tail.DrawGeometry();
+            {
+                tail.DrawGeometry(false);
+                if (Configs.Config.WireFrameMode)
+                    tail.DrawGeometry(true);
+            }
 
             //uses immediate so that the shader can be changed between each sprite
             Main.spriteBatch.Begin(SpriteSortMode.Immediate, default, SamplerState.PointClamp, default, default, default, Main.GameViewMatrix.ZoomMatrix);
@@ -115,7 +119,11 @@ namespace TailLib
             graphics.Clear(Color.Transparent);
 
             foreach (TailInstance tail in NpcTailList)
-                tail.DrawGeometry();
+            {
+                tail.DrawGeometry(false);
+                if(Configs.Config.WireFrameMode)
+                    tail.DrawGeometry(true);
+            }
 
             Main.spriteBatch.Begin(default, default, SamplerState.PointClamp, default, default, default, Main.GameViewMatrix.ZoomMatrix);
             foreach (TailInstance tail in NpcTailList)
