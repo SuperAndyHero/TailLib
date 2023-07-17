@@ -16,6 +16,7 @@ using static TailLib.TailHandler;
 using Terraria.GameContent;
 using Terraria.Graphics.Shaders;
 using static Terraria.GameContent.Animations.Actions;
+using Microsoft.VisualBasic;
 
 namespace TailLib
 {
@@ -80,38 +81,49 @@ namespace TailLib
         public Tailbase currentMenuBase = null;
         public override void ResetEffects()
         {
-            if (Main.gameMenu)
-            {
-                Type newType = null;
 
-                //todo: this could be used in place of the item setting these itself, not just on the main menu
-                for (int i = 0; i < Player.armor.Length; i++)
-                {
-                    if (Player.armor[i].ModItem is TailItem)
-                    {
-                        newType = (Player.armor[i].ModItem as TailItem).TailType;
-
-                        Item dyeitem = Player.dye[i];
-                        if (dyeitem != null && !dyeitem.IsAir)
-                            DyeItemType = dyeitem.type;
-
-                        break;
-                    }
-                }
-
-                if (newType != null && (currentMenuBase == null || currentMenuBase.GetType() != newType))
-                    currentMenuBase = (Tailbase)Activator.CreateInstance(newType);
-            }
-            else
-                currentMenuBase = null;
-
-
-
-            if (previouslyActive && !currentlyActive /*&& null check*/)
+            if (previouslyActive && !currentlyActive /*&& null check*/ && tail != null)
                 tail.Remove();
 
             previouslyActive = currentlyActive;
             currentlyActive = false;
+
+
+            Type newType = null;
+
+            for (int i = 0; i < Player.armor.Length; i++)
+            {
+                if (Player.armor[i].ModItem is TailItem)
+                {
+
+                    TailItem tailitem = Player.armor[i].ModItem as TailItem;
+
+                    if (!tailitem.TailActive)
+                        continue;
+
+                    newType = tailitem.TailType;
+
+                    Item dyeitem = Player.dye[i % Player.dye.Length];
+                    if (dyeitem != null)
+                        DyeItemType = dyeitem.type;
+
+                    break;
+                }
+            }
+
+
+            if (Main.gameMenu)
+            {
+                if (newType != null && (currentMenuBase == null || currentMenuBase.GetType() != newType))
+                    currentMenuBase = (Tailbase)Activator.CreateInstance(newType);
+            }
+            else
+            {
+                currentMenuBase = null;
+
+                if (newType != null)
+                    CurrentTailType = newType;
+            }
         }
 
         /// <summary>

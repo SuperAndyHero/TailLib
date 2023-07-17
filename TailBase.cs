@@ -131,6 +131,15 @@ namespace TailLib
         /// <param name="spriteBatch"></param>
         public virtual void DrawSprites(SpriteBatch spriteBatch) { }
 
+        /// <summary>
+        /// use this to draw a sprite and apply the shader at the same time
+        /// </summary>
+        public void DrawShaderSprite(SpriteBatch spriteBatch, DrawData drawdata)
+        {
+            tailInstance.ApplyShader(drawdata);
+            drawdata.Draw(spriteBatch);
+        }
+
         public virtual Vector2 DrawMenuOffset() => Vector2.Zero;
         public virtual bool PreDrawMenuLayer(ref PlayerDrawSet drawInfo) => true;
         public virtual void PostDrawMenuLayer(ref PlayerDrawSet drawInfo) { }
@@ -166,7 +175,7 @@ namespace TailLib
         /// <param name="basicEffect">wip</param>
         /// <param name="basicEffectPass"></param>
         /// <param name="graphicsDevice"></param>
-        public virtual void PreDrawGeometry(ArmorShaderData vanillaShader, Entity entity, BasicEffect basicEffect, EffectPass basicEffectPass, GraphicsDevice graphicsDevice) { }
+        public virtual void PreDrawGeometry(BasicEffect basicEffect, EffectPass basicEffectPass, GraphicsDevice graphicsDevice, ArmorShaderData armorShader, Entity entity, bool UseArmorShader) { }
         /// <summary>
         /// the color its drawn in, if you pass your own color consider multiplying by tailInstance.alpha
         /// </summary>

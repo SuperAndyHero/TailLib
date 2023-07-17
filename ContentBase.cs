@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Terraria.ModLoader;
 using Terraria;
+using Terraria.DataStructures;
 
 namespace TailLib
 {
@@ -19,43 +20,32 @@ namespace TailLib
         protected TailItem(Type tailType) =>
             TailType = tailType;
 
-        //if setting the tail is moved to mod player, this needs a property for if the tail is active
+        #region manual example
+        //you can still manually set a tail active from anywhere via something like this
 
-        public sealed override void UpdateEquip(Player player)
-        {
-            if (SafeUpdateEquip(player))
-            {
-                player.GetModPlayer<TailPlayer>().CurrentTailType = TailType;
-                player.GetModPlayer<TailPlayer>().DyeItemType = GetAppliedDyeItem(player);
-            }
-        }
+        //player.GetModPlayer<TailPlayer>().CurrentTailType = TailType;
+        //player.GetModPlayer<TailPlayer>().DyeItemType = GetAppliedDyeItem(player);
 
-        public int GetAppliedDyeItem(Player player)
-        {
-            int dyeType = -1;
-            for (int i = 0; i < player.armor.Length; i++)
-            {
-                if (player.armor[i] == Item)
-                {
-                    Item dyeitem = player.dye[i];
+        //public int GetAppliedDyeItem(Player player)
+        //{
+        //    int dyeType = -1;
+        //    for (int i = 0; i < player.armor.Length; i++)
+        //    {
+        //        if (player.armor[i] == Item)
+        //        {
+        //            Item dyeitem = player.dye[i];
 
-                    if (dyeitem != null && !dyeitem.IsAir)
-                        dyeType = dyeitem.type;
+        //            if (dyeitem != null && !dyeitem.IsAir)
+        //                dyeType = dyeitem.type;
 
-                    break;
-                }
-            }
-            return dyeType;
-        }
+        //            break;
+        //        }
+        //    }
+        //    return dyeType;
+        //}
+        #endregion
 
-        /// <summary>
-        /// Use this as you would normally use UpdateAccessory.
-        /// Return false to disable tail.
-        /// </summary>
-        /// <param name="player"></param>
-        /// <param name="hideVisual"></param>
-        /// <returns></returns>
-        public virtual bool SafeUpdateEquip(Player player) => true;
+        public virtual bool TailActive => true;
     }
 
     /// <summary>
@@ -69,16 +59,10 @@ namespace TailLib
         protected TailNpc(Type tailType) =>
             TailType = tailType;
 
-        private bool hasSpawned = false;
-        public sealed override void AI()
+        public sealed override void OnSpawn(IEntitySource source)
         {
-            if (!hasSpawned)
-            {
-                NPC.SetTail(TailType);
-                hasSpawned = true;
-            }
-
-            //npc.TailActive(SafeAI());
+            NPC.SetTail(TailType);
+            SafeOnSpawn();
         }
 
         /// <summary>
@@ -86,6 +70,6 @@ namespace TailLib
         /// Return false to disable tail.
         /// </summary>
         /// <returns></returns>
-        public virtual bool SafeAI() => true;
+        public virtual bool SafeOnSpawn() => true;
     }
 }

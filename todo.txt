@@ -6,11 +6,14 @@ add wireframe to the chain sim
 look into having mod player check item slots for tail items instead of items doing it themselves (cleaner and faster)
 add more config options
 shark tail is a bit too low, or needs sprite change
+find why binoculars causes offset based on camera speed (may effect other players in mp?)
 
 Needed before release:
+check if gravity breaks tails for other players/moving the camera
 item icons
 Very large fox tail
-maybe implement vanilla tails
+fix lizard tail: extend sprite, redo points
+maybe implement cat and alien tail from vanilla costumes
 FIX GRAVITY (use transformation matrix instead of zoom matrix, and implement cullmode none)
 
 Done:

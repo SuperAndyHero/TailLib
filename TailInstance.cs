@@ -218,15 +218,6 @@ namespace TailLib
         }
 
         /// <summary>
-        /// use this to draw a sprite and apply the shader at the same time
-        /// </summary>
-        public void DrawShaderSprite(SpriteBatch spriteBatch, DrawData drawdata)
-        {
-            ApplyShader(drawdata);
-            drawdata.Draw(spriteBatch);
-        }
-
-        /// <summary>
         /// allows the tailbase to draw custom sprites
         /// </summary>
         /// <param name="spriteBatch"></param>
@@ -257,11 +248,18 @@ namespace TailLib
             BasicEffect basiceffect = TailLib.BasicEffect;
             EffectPass basiceffectpass = basiceffect.CurrentTechnique.Passes[0];
 
-            tailBase.PreDrawGeometry(armorShaderData, entity, basiceffect, basiceffectpass, graphicsDevice);
-
             bool useArmorShader = armorShaderData != null && !wireframe;//maybe add this as a param to predrawgeometry
 
-            Matrix viewMatrix = useArmorShader ? Main.GameViewMatrix.TransformationMatrix * Matrix.CreateScale(0.25f) : Main.GameViewMatrix.ZoomMatrix * Matrix.CreateScale(1, -1, 1);
+            tailBase.PreDrawGeometry(basiceffect, basiceffectpass, graphicsDevice, armorShaderData, entity, useArmorShader);
+
+            //first translation fixes less than pixel offset issue when using a dye
+            graphicsDevice.RasterizerState.CullMode = CullMode.None;
+
+            //this may need to use transformation matrix is other tails break when gravity is flipped (transform matrix also includes grav, so logic below has to be changed
+            Matrix viewMatrix = useArmorShader ? 
+                Matrix.CreateTranslation(0, -0.25f, 0) * Main.GameViewMatrix.ZoomMatrix * Matrix.CreateScale(0.25f) :
+                Main.GameViewMatrix.ZoomMatrix * Matrix.CreateScale(1, -1, 1);
+
             Vector2 viewSizeOffset = useArmorShader ? Vector2.Zero : (Main.ViewSize * 0.5f);
 
             if (tailBase.GeometryEnabled)
@@ -273,13 +271,13 @@ namespace TailLib
 
                 Vector2 startLocation = tailBones.ropeSegments[0].ScreenPos - viewSizeOffset;
                 //int directionMult = (startLocation.X > tailBones.ropeSegments[tailBones.segmentCount - 1].ScreenPos.X - Main.ViewSize.X * 0.5f ? -1 : 1) * -(int)facingDirection.Y;
-                int facingDir = (tailBase.SpriteDirection() ? 1 : -1);
-                int directionMult = (int)facingDirection.Y * facingDir;
+                int spriteDir = (tailBase.SpriteDirection() ? 1 : -1);
+                int directionMult = (int)facingDirection.Y * spriteDir;
                 Vector2[] texCor = directionMult == 1 ? texCoordL : texCoordR;
 
                 //this angle allows the base to tilt if the angle is too extreme
                 const float rotateAngle = (float)Math.PI * 0.175f;//0.15-0.2 is a good range, this is the limit and range it tilts
-                float seg0to1angle = (facingDir == 1 ? 
+                float seg0to1angle = (spriteDir == 1 ? 
                     (tailBones.ropeSegments[0].posNow - tailBones.ropeSegments[1].posNow) : 
                     (tailBones.ropeSegments[1].posNow - tailBones.ropeSegments[0].posNow)).ToRotation();
                 bool aboveAngle = seg0to1angle > rotateAngle;

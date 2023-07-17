@@ -13,7 +13,7 @@ namespace TailLib
     public static class Extensions
     {
         /// <summary>
-        /// Adds a tail to a npc, suggested that you call this in setdefaults
+        /// Adds a tail to a npc, suggested that you call this in OnSpawn
         /// </summary>
         /// <param name="npc"></param>
         /// <param name="type"></param>
