@@ -184,7 +184,7 @@ namespace TailLib
         public Vector2 posNow;
         public Vector2 posOld;
 
-        public Vector2 ScreenPos => (posNow - Main.screenPosition);
+        public Vector2 ScreenPos => (posNow - Main.screenPosition) + (posNow - posOld);
 
         public RopeSegment(Vector2 pos)
         {

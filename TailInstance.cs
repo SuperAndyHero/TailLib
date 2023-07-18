@@ -258,9 +258,9 @@ namespace TailLib
             //this may need to use transformation matrix is other tails break when gravity is flipped (transform matrix also includes grav, so logic below has to be changed
             Matrix viewMatrix = useArmorShader ? 
                 Matrix.CreateTranslation(0, -0.25f, 0) * Main.GameViewMatrix.ZoomMatrix * Matrix.CreateScale(0.25f) :
-                Main.GameViewMatrix.ZoomMatrix * Matrix.CreateScale(1, -1, 1);
+                Main.GameViewMatrix.ZoomMatrix * Matrix.CreateTranslation(-Main.screenWidth * 0.5f, -Main.screenHeight * 0.5f, 0) * Matrix.CreateScale(1, -1, 1);
 
-            Vector2 viewSizeOffset = useArmorShader ? Vector2.Zero : (Main.ViewSize * 0.5f);
+            //Vector2 viewSizeOffset = useArmorShader ? Vector2.Zero : Main.ViewSize * 0.5f;
 
             if (tailBase.GeometryEnabled)
             {
@@ -269,7 +269,7 @@ namespace TailLib
 
                 VertexPositionColorTexture[] vertexPos = new VertexPositionColorTexture[geometryBuffer.VertexCount];
 
-                Vector2 startLocation = tailBones.ropeSegments[0].ScreenPos - viewSizeOffset;
+                Vector2 startLocation = tailBones.ropeSegments[0].ScreenPos/* - viewSizeOffset*/;
                 //int directionMult = (startLocation.X > tailBones.ropeSegments[tailBones.segmentCount - 1].ScreenPos.X - Main.ViewSize.X * 0.5f ? -1 : 1) * -(int)facingDirection.Y;
                 int spriteDir = (tailBase.SpriteDirection() ? 1 : -1);
                 int directionMult = (int)facingDirection.Y * spriteDir;
@@ -285,7 +285,7 @@ namespace TailLib
                 float topStartRot = aboveAngle ? seg0to1angle - (Math.Sign(seg0to1angle) * rotateAngle) : 0;
                 float bottomStartRot = belowAngle ? seg0to1angle - (Math.Sign(seg0to1angle) * rotateAngle) : 0;
 
-                vertexPos[2] = new VertexPositionColorTexture(new Vector3(tailBones.ropeSegments[1].ScreenPos - viewSizeOffset, 0).Transform(viewMatrix), tailBase.GeometryColor(1), texCor[2]);
+                vertexPos[2] = new VertexPositionColorTexture(new Vector3(tailBones.ropeSegments[1].ScreenPos/* - viewSizeOffset*/, 0).Transform(viewMatrix), tailBase.GeometryColor(1), texCor[2]);
 
                 vertexPos[1] = new VertexPositionColorTexture(new Vector3(startLocation + (Vector2.UnitY.RotatedBy(bottomStartRot + (topStartRot * 0.5f)) * (directionMult * (int)facingDirection.Y) * tailBase.Width), 0).Transform(viewMatrix), tailBase.GeometryColor(0), texCor[1]);
                 vertexPos[0] = new VertexPositionColorTexture(new Vector3(startLocation + (Vector2.UnitY.RotatedBy(topStartRot + (bottomStartRot * 0.5f)) * -(directionMult * (int)facingDirection.Y) * tailBase.Width), 0).Transform(viewMatrix), tailBase.GeometryColor(0), texCor[0]);
@@ -293,20 +293,20 @@ namespace TailLib
                 for (int i = 1; i < tailBones.segmentCount - 1; i++)//sets all vertexes besides the last two
                 {
                     int index = i * 3;
-                    vertexPos[index + 2] = new VertexPositionColorTexture(new Vector3(tailBones.ropeSegments[i + 1].ScreenPos - viewSizeOffset, 0).Transform(viewMatrix), tailBase.GeometryColor(i + 1), texCor[index + 2]);
+                    vertexPos[index + 2] = new VertexPositionColorTexture(new Vector3(tailBones.ropeSegments[i + 1].ScreenPos/* - viewSizeOffset*/, 0).Transform(viewMatrix), tailBase.GeometryColor(i + 1), texCor[index + 2]);
 
                     float directionRot = 
                         ((tailBones.ropeSegments[i + 1].posNow - tailBones.ropeSegments[i].posNow) + 
                         (tailBones.ropeSegments[i].posNow - tailBones.ropeSegments[i - 1].posNow)).ToRotation() + 
                         (float)Math.PI * 0.5f;
-                    Vector2 segLocation = tailBones.ropeSegments[i].ScreenPos - viewSizeOffset;
+                    Vector2 segLocation = tailBones.ropeSegments[i].ScreenPos/* - viewSizeOffset*/;
                     vertexPos[index + 1] = new VertexPositionColorTexture(new Vector3(segLocation + (Vector2.UnitY.RotatedBy(directionRot + (Math.PI * 0.5f)) * tailBase.Width), 0).Transform(viewMatrix), tailBase.GeometryColor(i), texCor[index + 1]);
                     vertexPos[index] = new VertexPositionColorTexture(new Vector3(segLocation + (Vector2.UnitY.RotatedBy(directionRot - (Math.PI * 0.5f)) * tailBase.Width), 0).Transform(viewMatrix), tailBase.GeometryColor(i), texCor[index]);
                 }
 
                 //last two vert
                 float directionRot2 = (tailBones.ropeSegments[tailBones.segmentCount - 2].posNow - tailBones.ropeSegments[tailBones.segmentCount - 1].posNow).ToRotation() + (float)Math.PI * 0.5f;
-                Vector2 segLocation2 = tailBones.ropeSegments[tailBones.segmentCount - 1].ScreenPos - viewSizeOffset;
+                Vector2 segLocation2 = tailBones.ropeSegments[tailBones.segmentCount - 1].ScreenPos/* - viewSizeOffset*/;
                 vertexPos[geometryBuffer.VertexCount - 2] = new VertexPositionColorTexture(new Vector3(segLocation2 + (Vector2.UnitY.RotatedBy(directionRot2 + (Math.PI * 0.5f)) * tailBase.Width), 0).Transform(viewMatrix), tailBase.GeometryColor(tailBones.segmentCount - 1), texCor[geometryBuffer.VertexCount - 2]);
                 vertexPos[geometryBuffer.VertexCount - 1] = new VertexPositionColorTexture(new Vector3(segLocation2 + (Vector2.UnitY.RotatedBy(directionRot2 - (Math.PI * 0.5f)) * tailBase.Width), 0).Transform(viewMatrix), tailBase.GeometryColor(tailBones.segmentCount - 1), texCor[geometryBuffer.VertexCount - 1]);
 
@@ -337,7 +337,7 @@ namespace TailLib
                 VertexPositionColorTexture[] vertexPos = new VertexPositionColorTexture[spineBuffer.VertexCount];//vanilla dyes need a texture coord value
 
                 for (int i = 0; i < vertexPos.Length; i++)
-                    vertexPos[i] = new VertexPositionColorTexture(new Vector3(tailBones.ropeSegments[i].ScreenPos - viewSizeOffset, 0).Transform(viewMatrix), tailBase.SpineColor(i), Vector2.Zero);
+                    vertexPos[i] = new VertexPositionColorTexture(new Vector3(tailBones.ropeSegments[i].ScreenPos/* - viewSizeOffset*/, 0).Transform(viewMatrix), tailBase.SpineColor(i), Vector2.Zero);
 
                 spineBuffer.SetData(vertexPos);
 

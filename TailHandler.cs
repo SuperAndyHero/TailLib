@@ -1,3 +1,4 @@
+using log4net.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
@@ -66,9 +67,33 @@ namespace TailLib
         internal static void Load()
         {
             //On.Terraria.DataStructures.PlayerDrawLayers.DrawPlayer_RenderAllLayers += DrawTailTargetPlayer;
-            Terraria.On_Main.DrawNPCs += DrawTailTargetNpc;
-            Main.OnPreDraw += DrawTails;
+            Terraria.On_Main.DrawNPCs += DrawTailTarget;
             Terraria.On_Main.DoUpdate += Main_DoUpdate;
+            Terraria.On_Main.DoDraw_UpdateCameraPosition += On_Main_DoDraw_UpdateCameraPosition;
+            Terraria.On_Main.DrawBG += On_Main_DrawBG;
+            Terraria.On_Main.DoDraw_WallsTilesNPCs += On_Main_DoDraw_WallsTilesNPCs;
+        }
+
+        private static void On_Main_DoDraw_WallsTilesNPCs(On_Main.orig_DoDraw_WallsTilesNPCs orig, Main self)
+        {
+            //Main.spriteBatch.End();
+            //RenderTails();
+            //Main.spriteBatch.Begin((SpriteSortMode)0, BlendState.AlphaBlend, Main.DefaultSamplerState, DepthStencilState.None, Main.Rasterizer, null, Main.Transform);
+            //Main.instance.GraphicsDevice.SetRenderTarget(null);
+            orig(self);
+        }
+
+        private static void On_Main_DrawBG(On_Main.orig_DrawBG orig, Main self)
+        {
+            orig(self);
+            //RenderTails();
+        }
+
+        private static void On_Main_DoDraw_UpdateCameraPosition(On_Main.orig_DoDraw_UpdateCameraPosition orig)
+        {
+            //RenderTails();
+            orig();
+            RenderTails();
         }
 
         private static void Main_DoUpdate(Terraria.On_Main.orig_DoUpdate orig, Main self, ref GameTime gameTime)
@@ -89,7 +114,7 @@ namespace TailLib
             orig(self, ref gameTime);
         }
 
-        private static void DrawTails(GameTime obj)
+        private static void RenderTails()//draws tails to the rendertargets, just needs a time when no rendertarget or spritebatch is active
         {
             GraphicsDevice graphics = Main.instance.GraphicsDevice;
 
@@ -104,7 +129,7 @@ namespace TailLib
             }
 
             //uses immediate so that the shader can be changed between each sprite
-            Main.spriteBatch.Begin(SpriteSortMode.Immediate, default, SamplerState.PointClamp, default, default, default, Main.GameViewMatrix.ZoomMatrix);
+            Main.spriteBatch.Begin(SpriteSortMode.Immediate, default, SamplerState.PointClamp, default, default, default, Main.GameViewMatrix.TransformationMatrix);//may have to be changed back to zoomatrix? no change observed
             
             foreach (TailInstance tail in PlayerTailList)
                 tail.DrawSprites(Main.spriteBatch);
@@ -125,7 +150,7 @@ namespace TailLib
                     tail.DrawGeometry(true);
             }
 
-            Main.spriteBatch.Begin(default, default, SamplerState.PointClamp, default, default, default, Main.GameViewMatrix.ZoomMatrix);
+            Main.spriteBatch.Begin(SpriteSortMode.Immediate, default, SamplerState.PointClamp, default, default, default, Main.GameViewMatrix.TransformationMatrix);
             foreach (TailInstance tail in NpcTailList)
                 tail.DrawSprites(Main.spriteBatch);
             Main.spriteBatch.End();
@@ -146,16 +171,19 @@ namespace TailLib
         //}
 
         //draws both player and npc tails to the world
-        private static void DrawTailTargetNpc(Terraria.On_Main.orig_DrawNPCs orig, Main self, bool behindTiles)
+        private static void DrawTailTarget(Terraria.On_Main.orig_DrawNPCs orig, Main self, bool behindTiles)
         {
             Main.spriteBatch.End();
+
 
             Main.spriteBatch.Begin(default, null, SamplerState.PointClamp, null, null, null);
             Main.spriteBatch.Draw(NpcTailTarget, new Rectangle(0, 0, PlayerTailTarget.Width, PlayerTailTarget.Height), null, Color.White, 0, default, Main.LocalPlayer.gravDir == 1 ? SpriteEffects.None : SpriteEffects.FlipVertically, default);
             Main.spriteBatch.End();
 
             Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, Main.DefaultSamplerState, DepthStencilState.None, Main.Rasterizer, null, Main.GameViewMatrix.TransformationMatrix);
+            
             orig(self, behindTiles);
+
             Main.spriteBatch.End();
 
             Main.spriteBatch.Begin(default, null, SamplerState.PointClamp, null, null, null);
