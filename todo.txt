@@ -2,24 +2,29 @@ having frameskip off causes random weird offsets for a single frame
 look into combining npc and player targets, may be possible to reuse a vanilla target?
 forces on starry tail need to be redone
 forces on shark tail need a major rewrite
-add wireframe to the chain sim
 look into having mod player check item slots for tail items instead of items doing it themselves (cleaner and faster)
 add more config options
 shark tail is a bit too low, or needs sprite change
-find out where float percision error is coming from
+find out where float percision error is coming from (precision is being lost, not gained)
+check one more time if chain.screenpos needs the extra offset
 
 Needed before release:
-REMOVE EXTRA HOOKS IN TAIL HANDLER
-check one more time if chain.screenpos needs the extra offset
+
+Libarary:
 check if gravity breaks tails for other players/moving the camera
+make sure rendering culling does not break anything
+make sure sim culling does not break anything
+
+Content:
 item icons
 Very large fox tail
 fix lizard tail: extend sprite, redo points
 maybe implement cat and alien tail from vanilla costumes
-add rendering/sim culling
-reset on teleport
 
 Done:
+add rendering/sim culling
+add wireframe to the chain sim
+reset on teleport
 fix spine drawing
 fix sprite drawing (mods that use it need to call a specific method)
 make shaders draw on main menu

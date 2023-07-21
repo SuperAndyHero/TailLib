@@ -17,6 +17,7 @@ using Terraria.GameContent;
 using Terraria.Graphics.Shaders;
 using static Terraria.GameContent.Animations.Actions;
 using Microsoft.VisualBasic;
+using log4net;
 
 namespace TailLib
 {
@@ -28,7 +29,7 @@ namespace TailLib
         /// <summary>
         /// The instance of the current tail, is null unless set
         /// </summary>
-        private TailInstance tail = null;
+        public TailInstance tail = null;
 
         /// <summary>
         /// If the tail is currently active
@@ -54,12 +55,24 @@ namespace TailLib
 
         public int DyeItemType = -1;
 
+        public void ResetTail()
+        {
+            if (currentlyActive && tail != null)
+            {
+                tail.ResetTailBones(Player.Center);
+            }
+        }
+
         public override void PreUpdate()
         {
             if (currentlyActive)
             {
                 if (tail != null)
                 {
+                    //the cull check is here instead of in tail.update so that this extra logic can be skipped, but this extra logic isnt much slowdown so it can be moved if needed
+                    if (!(cullRect.Contains(Player.Center.ToPoint()) || cullRect.Contains(tail.tailBones.startPoint.ToPoint())))
+                        return;//returns if offscreen
+
                     //if current tailType is different than the type of the active tail
                     if (_currentTailType != null && (tail.tailBase.GetType() != _currentTailType || (!previouslyActive && currentlyActive)))
                     {
@@ -127,13 +140,13 @@ namespace TailLib
         }
 
         /// <summary>
-        /// singleplayer and client only, convenient place to clear all lists
+        /// method called in singleplayer and client only (?), convenient place to clear all lists
         /// </summary>
         /// <param name="player"></param>
         public override void OnEnterWorld()
         {
-            TailHandler.PlayerTailList.Clear();
-            TailHandler.NpcTailList.Clear();
+            TailHandler.GlobalPlayerTailList.Clear();
+            TailHandler.GlobalNpcTailList.Clear();
         }
 
         public override void PlayerDisconnect()

@@ -5,6 +5,7 @@ using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 using static Terraria.ModLoader.ModContent;
+using static Terraria.ModLoader.PlayerDrawLayer;
 
 namespace TailLib
 {
@@ -31,7 +32,9 @@ namespace TailLib
 
         public override bool PreAI(NPC npc)
         {
-            if (tailActive)
+            //npcs dont support having their tail type changed automatically (likely not needed)
+            //only runs when on screen
+            if (tailActive && (TailHandler.cullRect.Contains(npc.Center.ToPoint()) || TailHandler.cullRect.Contains(tail.tailBones.startPoint.ToPoint())))
             {
                 tail.tailBones.Active = npc.active && tailActive;
                 tail.Update(npc.Center + new Vector2(0, npc.gfxOffY), new Vector2(npc.direction, 1));
@@ -48,7 +51,7 @@ namespace TailLib
             return base.CheckDead(npc);
         }
 
-        public override void Unload()
+        public override void Unload()//is not per npc instance
         {
             RemovalQueue = null;
             ActiveTailNpcsList = null;

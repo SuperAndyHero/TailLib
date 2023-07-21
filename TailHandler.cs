@@ -24,11 +24,11 @@ namespace TailLib
         /// List of every tail instance on players
         /// Note: updating is done locally and not through this
         /// </summary>
-        public static List<TailInstance> PlayerTailList = new List<TailInstance>();
+        public static List<TailInstance> GlobalPlayerTailList = new List<TailInstance>();
         /// <summary>
         /// List of every tail instace on npcs
         /// </summary>
-        public static List<TailInstance> NpcTailList = new List<TailInstance>();
+        public static List<TailInstance> GlobalNpcTailList = new List<TailInstance>();
 
         /// <summary>
         /// The render target the player tails are drawn to, drawn just before players
@@ -58,46 +58,50 @@ namespace TailLib
             switch (layer)
             {
                 case Layer.Player:
-                    return PlayerTailList;
+                    return GlobalPlayerTailList;
                 default:
-                    return NpcTailList;
+                    return GlobalNpcTailList;
             }
         }
 
         internal static void Load()
         {
+            Terraria.On_Player.Teleport += On_Player_Teleport;
+            Terraria.On_Player.Spawn += On_Player_Spawn;
             //On.Terraria.DataStructures.PlayerDrawLayers.DrawPlayer_RenderAllLayers += DrawTailTargetPlayer;
-            Terraria.On_Main.DrawNPCs += DrawTailTarget;
-            Terraria.On_Main.DoUpdate += Main_DoUpdate;
-            Terraria.On_Main.DoDraw_UpdateCameraPosition += On_Main_DoDraw_UpdateCameraPosition;
-            Terraria.On_Main.DrawBG += On_Main_DrawBG;
-            Terraria.On_Main.DoDraw_WallsTilesNPCs += On_Main_DoDraw_WallsTilesNPCs;
+            Terraria.On_Main.DrawNPCs += DrawTailTarget;//draws both rendertargets to the screen
+            Terraria.On_Main.DoUpdate += Main_DoUpdate;//updates active npc tails
+            Terraria.On_Main.DoDraw_UpdateCameraPosition += On_Main_DoDraw_UpdateCameraPosition;//renders tails to rendertarget
         }
 
-        private static void On_Main_DoDraw_WallsTilesNPCs(On_Main.orig_DoDraw_WallsTilesNPCs orig, Main self)
+        private static void On_Player_Spawn(On_Player.orig_Spawn orig, Player self, PlayerSpawnContext context)
         {
-            //Main.spriteBatch.End();
-            //RenderTails();
-            //Main.spriteBatch.Begin((SpriteSortMode)0, BlendState.AlphaBlend, Main.DefaultSamplerState, DepthStencilState.None, Main.Rasterizer, null, Main.Transform);
-            //Main.instance.GraphicsDevice.SetRenderTarget(null);
-            orig(self);
+            orig(self, context);
+            TailPlayer modplayer = self.GetModPlayer<TailPlayer>();
+            modplayer.ResetTail();//method does nothing if the tail is not active
         }
 
-        private static void On_Main_DrawBG(On_Main.orig_DrawBG orig, Main self)
+        private static void On_Player_Teleport(On_Player.orig_Teleport orig, Player self, Vector2 newPos, int Style, int extraInfo)
         {
-            orig(self);
-            //RenderTails();
+            orig(self, newPos, Style, extraInfo);
+            TailPlayer modplayer = self.GetModPlayer<TailPlayer>();
+            modplayer.ResetTail();//method does nothing if the tail is not active
         }
 
         private static void On_Main_DoDraw_UpdateCameraPosition(On_Main.orig_DoDraw_UpdateCameraPosition orig)
         {
-            //RenderTails();
+            //this hook is used due to a bug when moving the camera seperate from the player
             orig();
             RenderTails();
         }
 
-        private static void Main_DoUpdate(Terraria.On_Main.orig_DoUpdate orig, Main self, ref GameTime gameTime)
+        public static Rectangle cullRect = new Rectangle();
+
+        private static void Main_DoUpdate(On_Main.orig_DoUpdate orig, Main self, ref GameTime gameTime)
         {
+            cullRect = new Rectangle((int)Main.screenPosition.X, (int)Main.screenPosition.Y, Main.screenWidth, Main.screenHeight);
+            cullRect.Inflate(Main.screenWidth, Main.screenHeight);//adds the values to each side of rect (resulting rect ends up with a new width of old value + new value * 2)
+
             foreach (NPC npc in TailGlobalNPC.RemovalQueue)
                 TailGlobalNPC.ActiveTailNpcsList.Remove(npc);
 
@@ -121,7 +125,7 @@ namespace TailLib
             graphics.SetRenderTarget(PlayerTailTarget);
             graphics.Clear(Color.Transparent);
 
-            foreach (TailInstance tail in PlayerTailList)
+            foreach (TailInstance tail in GlobalPlayerTailList)
             {
                 tail.DrawGeometry(false);
                 if (Configs.Config.WireFrameMode)
@@ -131,7 +135,7 @@ namespace TailLib
             //uses immediate so that the shader can be changed between each sprite
             Main.spriteBatch.Begin(SpriteSortMode.Immediate, default, SamplerState.PointClamp, default, default, default, Main.GameViewMatrix.TransformationMatrix);//may have to be changed back to zoomatrix? no change observed
             
-            foreach (TailInstance tail in PlayerTailList)
+            foreach (TailInstance tail in GlobalPlayerTailList)
                 tail.DrawSprites(Main.spriteBatch);
             Main.spriteBatch.End();
 
@@ -143,7 +147,7 @@ namespace TailLib
             graphics.SetRenderTarget(NpcTailTarget);
             graphics.Clear(Color.Transparent);
 
-            foreach (TailInstance tail in NpcTailList)
+            foreach (TailInstance tail in GlobalNpcTailList)
             {
                 tail.DrawGeometry(false);
                 if(Configs.Config.WireFrameMode)
@@ -151,7 +155,7 @@ namespace TailLib
             }
 
             Main.spriteBatch.Begin(SpriteSortMode.Immediate, default, SamplerState.PointClamp, default, default, default, Main.GameViewMatrix.TransformationMatrix);
-            foreach (TailInstance tail in NpcTailList)
+            foreach (TailInstance tail in GlobalNpcTailList)
                 tail.DrawSprites(Main.spriteBatch);
             Main.spriteBatch.End();
 

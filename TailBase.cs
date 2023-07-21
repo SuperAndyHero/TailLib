@@ -187,6 +187,7 @@ namespace TailLib
         /// <summary>
         /// Allows you to do stuff when this is updated
         /// Return false to stop the tail from updating
+        /// Does not run when too far offscreen (off edge + 1 screen width/height)
         /// Note: tailInstance has a few helper extension methods you can call from here for some built in functionallity
         /// </summary>
         public virtual bool PreUpdate() { return true; }

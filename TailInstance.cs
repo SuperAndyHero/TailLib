@@ -79,34 +79,12 @@ namespace TailLib
 
             layer = drawLayer;
 
-            bool distances = tailBase.VertexDistances != null;
-            bool gravities = tailBase.VertexGravityForces != null;
-
-            Vector2[] settledPoints;
-            if (tailBase.SettledPoints != null)
-                settledPoints = tailBase.SettledPoints;
-            else
-            {
-                settledPoints = new Vector2[tailBase.VertexCount];
-                for (int i = 0; i < tailBase.VertexCount; i++)
-                {
-                    float dist = distances ? tailBase.VertexDistances[i] : tailBase.VertexDistance;
-                    Vector2 grav = gravities ? tailBase.VertexGravityForces[i] * tailBase.VertexGravityForce : tailBase.VertexGravityForce;
-                    settledPoints[i] = (grav * dist) + (i > 0 ? settledPoints[i - 1] : Vector2.Zero);
-                }
-            }
-
-
-            tailBones = new VerletChainInstance(tailBase.VertexCount, position + tailBase.WorldOffset,
-                position + ((tailBase.WorldOffset + settledPoints[tailBase.VertexCount - 1]) * facingDirection), tailBase.VertexDistance, tailBase.VertexGravityForce * facingDirection,
-                gravities, tailBase.VertexGravityForces?.ToList(), distances, tailBase.VertexDistances?.ToList())
-            {
-                drag = tailBase.VertexDrag,
-                constraintRepetitions = tailBase.PhysicsRepetitions
-            };
+            //this method calculates the settled points since it needs it either way
+            //and it passes it out so that it does not need to be done twice when creating a tail
+            Vector2[] settledPoints = ResetTailBones(position);
 
             //if (tailBase.VertexCount > 1)
-            if (!Main.dedServ)
+            if (!Main.dedServ)//creates the geometry buffers, index buffer, and tex coords
             {
                 spineBuffer = !tailBase.SpineEnabled ? null : new VertexBuffer(Main.graphics.GraphicsDevice, typeof(VertexPositionColorTexture), tailBase.VertexCount, BufferUsage.WriteOnly);
 
@@ -173,6 +151,42 @@ namespace TailLib
             GetLayerList(layer).Add(this);
         }
 
+        private Vector2[] GetSettledPoints( bool useDistances, bool useGravities)
+        {
+
+            Vector2[] settledPoints;
+            if (tailBase.SettledPoints != null)
+                settledPoints = tailBase.SettledPoints;
+            else//builds a default set of settled points, do not rely on this as it becomes inaccurate unless the tail is a straight line
+            {//may need to account for grav dir
+                settledPoints = new Vector2[tailBase.VertexCount];
+                for (int i = 0; i < tailBase.VertexCount; i++)
+                {
+                    float dist = useDistances ? tailBase.VertexDistances[i] : tailBase.VertexDistance;
+                    Vector2 grav = useGravities ? tailBase.VertexGravityForces[i] * tailBase.VertexGravityForce : tailBase.VertexGravityForce;
+                    settledPoints[i] = (grav * dist) + (i > 0 ? settledPoints[i - 1] : Vector2.Zero);
+                }
+            }
+            return settledPoints;
+        }
+
+        public Vector2[] ResetTailBones(Vector2 position)
+        {
+            bool distances = tailBase.VertexDistances != null;
+            bool gravities = tailBase.VertexGravityForces != null;
+            Vector2[] settledPoints = GetSettledPoints(distances, gravities);
+
+            tailBones = new VerletChainInstance(tailBase.VertexCount, position + tailBase.WorldOffset,
+                position + ((tailBase.WorldOffset + settledPoints[tailBase.VertexCount - 1]) * facingDirection), tailBase.VertexDistance, tailBase.VertexGravityForce * facingDirection,
+                gravities, tailBase.VertexGravityForces?.ToList(), distances, tailBase.VertexDistances?.ToList())
+            {
+                drag = tailBase.VertexDrag,
+                constraintRepetitions = tailBase.PhysicsRepetitions
+            };
+
+            return settledPoints;
+        }
+
         /// <summary>
         /// updates the verlet chain and it's start point, and checks if the tail should be flipped
         /// </summary>
@@ -182,7 +196,7 @@ namespace TailLib
             if (tailBase.PreUpdate())
             {
                 facingDirection = new Vector2(-entityDirection.X, entityDirection.Y);
-                tailBones.startPoint = position + (tailBase.WorldOffset * facingDirection);
+                tailBones.startPoint = position + (tailBase.WorldOffset * facingDirection);//start point is also used for culling
 
                 tailBones.forceGravity = facingDirection * tailBase.VertexGravityForce;
 
@@ -241,6 +255,9 @@ namespace TailLib
         {
             if (!tailBones.Active)// && tailBones.segmentCount > 1)
                 return;
+
+            if (!cullRect.Contains(tailBones.startPoint.ToPoint()))//could use first point in chain here instead, but this should never be inaccurate and logic culling already uses it
+                return;//returns if offscreen
 
             GraphicsDevice graphicsDevice = Main.instance.GraphicsDevice;
 
