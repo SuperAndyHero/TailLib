@@ -9,7 +9,7 @@ using Terraria.Graphics.Shaders;
 using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.UI;
-using static TailLib.TailHandler;
+using static TailLib.TailSystem;
 using static Terraria.GameContent.Animations.Actions;
 
 namespace TailLib
@@ -256,7 +256,7 @@ namespace TailLib
             if (!tailBones.Active)// && tailBones.segmentCount > 1)
                 return;
 
-            if (!cullRect.Contains(tailBones.startPoint.ToPoint()))//could use first point in chain here instead, but this should never be inaccurate and logic culling already uses it
+            if (!CullRect.Contains(tailBones.startPoint.ToPoint()))//could use first point in chain here instead, but this should never be inaccurate and logic culling already uses it
                 return;//returns if offscreen
 
             GraphicsDevice graphicsDevice = Main.instance.GraphicsDevice;

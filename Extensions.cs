@@ -2,7 +2,7 @@ using Microsoft.Xna.Framework;
 using System;
 using Terraria;
 using Terraria.ModLoader;
-using static TailLib.TailHandler;
+using static TailLib.TailSystem;
 
 namespace TailLib
 {
@@ -13,12 +13,15 @@ namespace TailLib
     public static class Extensions
     {
         /// <summary>
-        /// Adds a tail to a npc, suggested that you call this in OnSpawn
+        /// Adds a tail to a npc, suggested that you call this in OnSpawn, returns null if NpcRenderingActive is false
         /// </summary>
         /// <param name="npc"></param>
         /// <param name="type"></param>
         public static TailInstance SetTail(this NPC npc, Type type)
         {
+            if (!TailLib.NpcRenderingActive)
+                return null;
+
             TailGlobalNPC globalNpc = npc.GetGlobalNPC<TailGlobalNPC>();
             globalNpc.tail = new TailInstance(type, npc.Center, Layer.Npc, npc, 1);
             globalNpc.tailActive = true;

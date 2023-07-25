@@ -1,27 +1,34 @@
-having frameskip off causes random weird offsets for a single frame
 look into combining npc and player targets, may be possible to reuse a vanilla target?
+globalNPC's tail RemovalQueue should be an actual queue
 forces on starry tail need to be redone
-forces on shark tail need a major rewrite
-look into having mod player check item slots for tail items instead of items doing it themselves (cleaner and faster)
-add more config options
-shark tail is a bit too low, or needs sprite change
-find out where float percision error is coming from (precision is being lost, not gained)
 check one more time if chain.screenpos needs the extra offset
+add more config options
+find out where float percision error is coming from (precision is being lost, not gained)
+having frameskip off causes random weird offsets for a single frame
+config option to force npc active state (debug only unless it is needed)
 
 Needed before release:
 
-Libarary:
+Library:
+check if disabler breaks when enabling/disabling mid game, or in other edge cases
+pixelation (needs shader, or another method that does not need extra matrix scaling)
 check if gravity breaks tails for other players/moving the camera
 make sure rendering culling does not break anything
 make sure sim culling does not break anything
 
 Content:
-item icons
+forces on shark tail need a major rewrite
+shark tail is a bit too low, or needs sprite change
 Very large fox tail
-fix lizard tail: extend sprite, redo points
-maybe implement cat and alien tail from vanilla costumes
+maybe implement cat and alien tail from vanilla costumes (cant find frames)
 
 Done:
+Item names
+Check if npc disabler works
+figure out how to only enable npc RT if a mod needs it (loading order issues? or use property when setting to true)
+fix lizard tail
+item icons (first pass)
+have mod player check item slots for tail items instead of items doing it themselves (cleaner and faster)
 add rendering/sim culling
 add wireframe to the chain sim
 reset on teleport
@@ -29,3 +36,10 @@ fix spine drawing
 fix sprite drawing (mods that use it need to call a specific method)
 make shaders draw on main menu
 (?)FIX GRAVITY (use transformation matrix instead of zoom matrix, and implement cullmode none)
+
+(?)list not cleared when player leaves
+(?)npc tail screenlag when upsidedown (only vertically)
+
+
+(?)tail screen lag for every player but client's player//try diff between localPlayer pos and old pos?
+(?)cont: in TailPlayer add a check if player is LocalPlayer and shift the position, or other way around (to avoid extra layer)

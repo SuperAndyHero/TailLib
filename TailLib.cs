@@ -8,22 +8,29 @@ namespace TailLib
 {
 	internal class TailLib : Mod
 	{
+        private static bool _NpcRenderingActive = false;
+        /// <summary>
+        /// If npcs should have tails rendered, set this to true during load if your mod needs tail rendering on npcs.
+        /// Prevents the npc rendertarget from being loaded if not in use.
+        /// </summary>
+        public static bool NpcRenderingActive
+        {
+            //most methods that deal with npcs check this (they could all be moved to a RT null check instead, could be needed since enabling is a tick behind)
+            get { return _NpcRenderingActive; }
+            set
+            {
+                ModContent.GetInstance<TailSystem>().CheckNpcTarget(value);
+                _NpcRenderingActive = value;
+            }
+        }
+
+        public static BasicEffect BasicEffect;
+
         public override void Load()
         {
             Main.QueueMainThreadAction(() => SetupEffect());
-            TailHandler.Load();
         }
 
-        //TODO
-        //tail screen lag for every player but client's player//try diff between localPlayer pos and old pos?
-        //cont: in TailPlayer add a check if player is LocalPlayer and shift the position, or other way around (to avoid extra layer)
-
-        //Fixed?
-        //fixed with PlayerDisconnect(Player player) in TailPlayer 
-        ////list not cleared when player leaves
-        ////npc tail screenlag when upsidedown (only vertically)
-
-        public static BasicEffect BasicEffect;
         private static void SetupEffect()
         {
             if (!Main.dedServ)

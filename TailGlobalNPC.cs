@@ -34,7 +34,7 @@ namespace TailLib
         {
             //npcs dont support having their tail type changed automatically (likely not needed)
             //only runs when on screen
-            if (tailActive && (TailHandler.cullRect.Contains(npc.Center.ToPoint()) || TailHandler.cullRect.Contains(tail.tailBones.startPoint.ToPoint())))
+            if (tailActive && (TailSystem.CullRect.Contains(npc.Center.ToPoint()) || TailSystem.CullRect.Contains(tail.tailBones.startPoint.ToPoint())))
             {
                 tail.tailBones.Active = npc.active && tailActive;
                 tail.Update(npc.Center + new Vector2(0, npc.gfxOffY), new Vector2(npc.direction, 1));

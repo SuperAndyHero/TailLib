@@ -12,7 +12,7 @@ using System.Linq;
 using System.Collections.Generic;
 using TailLib;
 using Terraria.ModLoader.IO;
-using static TailLib.TailHandler;
+using static TailLib.TailSystem;
 using Terraria.GameContent;
 using Terraria.Graphics.Shaders;
 using static Terraria.GameContent.Animations.Actions;
@@ -70,7 +70,7 @@ namespace TailLib
                 if (tail != null)
                 {
                     //the cull check is here instead of in tail.update so that this extra logic can be skipped, but this extra logic isnt much slowdown so it can be moved if needed
-                    if (!(cullRect.Contains(Player.Center.ToPoint()) || cullRect.Contains(tail.tailBones.startPoint.ToPoint())))
+                    if (!(CullRect.Contains(Player.Center.ToPoint()) || CullRect.Contains(tail.tailBones.startPoint.ToPoint())))
                         return;//returns if offscreen
 
                     //if current tailType is different than the type of the active tail
@@ -145,8 +145,8 @@ namespace TailLib
         /// <param name="player"></param>
         public override void OnEnterWorld()
         {
-            TailHandler.GlobalPlayerTailList.Clear();
-            TailHandler.GlobalNpcTailList.Clear();
+            TailSystem.GlobalPlayerTailList.Clear();
+            TailSystem.GlobalNpcTailList.Clear();
         }
 
         public override void PlayerDisconnect()

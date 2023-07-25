@@ -9,7 +9,7 @@ using Terraria.Graphics.Shaders;
 using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.UI;
-using static TailLib.TailHandler;
+using static TailLib.TailSystem;
 using static Terraria.GameContent.Animations.Actions;
 
 namespace TailLib

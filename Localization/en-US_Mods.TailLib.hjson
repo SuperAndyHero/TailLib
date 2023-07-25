@@ -6,5 +6,10 @@ Configs: {
 			Label: Show Wire Frame
 			Tooltip: ""
 		}
+
+		PixelateTails: {
+			Label: Pixelate Tails
+			Tooltip: ""
+		}
 	}
 }

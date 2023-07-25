@@ -10,7 +10,7 @@ using Terraria.Graphics.Shaders;
 using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.UI;
-using static TailLib.TailHandler;
+using static TailLib.TailSystem;
 using static Terraria.GameContent.Animations.Actions;
 
 namespace TailLib
@@ -18,8 +18,13 @@ namespace TailLib
     /// <summary>
     /// this handles everything to do with tails
     /// </summary>
-    public static class TailHandler
+    public class TailSystem : ModSystem
     {
+        /// <summary>
+        /// culls everything outside this rectangle
+        /// </summary>
+        public static Rectangle CullRect = new Rectangle();
+
         /// <summary>
         /// List of every tail instance on players
         /// Note: updating is done locally and not through this
@@ -29,24 +34,6 @@ namespace TailLib
         /// List of every tail instace on npcs
         /// </summary>
         public static List<TailInstance> GlobalNpcTailList = new List<TailInstance>();
-
-        /// <summary>
-        /// The render target the player tails are drawn to, drawn just before players
-        /// </summary>
-        public static RenderTarget2D PlayerTailTarget = Main.dedServ ? null : new RenderTarget2D(Main.graphics.GraphicsDevice, Main.screenWidth, Main.screenHeight, false, SurfaceFormat.Color, DepthFormat.None, 0, RenderTargetUsage.PreserveContents);
-        /// <summary>
-        /// The render target npc tails are drawn to, drawn just before npcs
-        /// </summary>
-        public static RenderTarget2D NpcTailTarget = Main.dedServ ? null : new RenderTarget2D(Main.graphics.GraphicsDevice, Main.screenWidth, Main.screenHeight, false, SurfaceFormat.Color, DepthFormat.None, 0, RenderTargetUsage.PreserveContents);
-        
-        /// <summary>
-        /// The layers you can have the tail draw on
-        /// </summary>
-        public enum Layer : ushort
-        {
-            Player,
-            Npc
-        }
 
         /// <summary>
         /// Gets a reference to a specific list via tha passed layer
@@ -64,8 +51,31 @@ namespace TailLib
             }
         }
 
-        internal static void Load()
+        /// <summary>
+        /// The render target the player tails are drawn to, drawn just before players
+        /// </summary>
+        public RenderTarget2D PlayerTailTarget;
+        /// <summary>
+        /// The render target npc tails are drawn to, drawn just before npcs
+        /// </summary>
+        public RenderTarget2D NpcTailTarget;
+
+        /// <summary>
+        /// The layers you can have the tail draw on
+        /// </summary>
+        public enum Layer : ushort
         {
+            Player,
+            Npc
+        }
+
+        public override void Load()
+        {
+            Main.QueueMainThreadAction(() => 
+                PlayerTailTarget = Main.dedServ ? null : new RenderTarget2D(Main.graphics.GraphicsDevice, Main.screenWidth, Main.screenHeight, false, SurfaceFormat.Color, DepthFormat.None, 0, RenderTargetUsage.PreserveContents));
+
+            CheckNpcTarget(TailLib.NpcRenderingActive);//likely not needed but allows it to load if the default is true, and has no cost if false
+
             Terraria.On_Player.Teleport += On_Player_Teleport;
             Terraria.On_Player.Spawn += On_Player_Spawn;
             //On.Terraria.DataStructures.PlayerDrawLayers.DrawPlayer_RenderAllLayers += DrawTailTargetPlayer;
@@ -74,54 +84,77 @@ namespace TailLib
             Terraria.On_Main.DoDraw_UpdateCameraPosition += On_Main_DoDraw_UpdateCameraPosition;//renders tails to rendertarget
         }
 
-        private static void On_Player_Spawn(On_Player.orig_Spawn orig, Player self, PlayerSpawnContext context)
+        /// <summary>
+        /// keeps the npc target from loading if not needed
+        /// </summary>
+        /// <param name="newActiveState"></param>
+        public void CheckNpcTarget(bool newActiveState)
+        {
+            if (Main.dedServ)
+                return;
+
+            if(newActiveState && NpcTailTarget == null)
+            {
+                Main.QueueMainThreadAction(() => 
+                    NpcTailTarget = new RenderTarget2D(Main.graphics.GraphicsDevice, Main.screenWidth, Main.screenHeight, false, SurfaceFormat.Color, DepthFormat.None, 0, RenderTargetUsage.PreserveContents));
+            }
+            else if (!newActiveState && NpcTailTarget != null)
+            {
+                NpcTailTarget = null;
+            }
+        }
+
+        private void On_Player_Spawn(On_Player.orig_Spawn orig, Player self, PlayerSpawnContext context)
         {
             orig(self, context);
             TailPlayer modplayer = self.GetModPlayer<TailPlayer>();
             modplayer.ResetTail();//method does nothing if the tail is not active
         }
 
-        private static void On_Player_Teleport(On_Player.orig_Teleport orig, Player self, Vector2 newPos, int Style, int extraInfo)
+        private void On_Player_Teleport(On_Player.orig_Teleport orig, Player self, Vector2 newPos, int Style, int extraInfo)
         {
             orig(self, newPos, Style, extraInfo);
             TailPlayer modplayer = self.GetModPlayer<TailPlayer>();
             modplayer.ResetTail();//method does nothing if the tail is not active
         }
 
-        private static void On_Main_DoDraw_UpdateCameraPosition(On_Main.orig_DoDraw_UpdateCameraPosition orig)
+        private void On_Main_DoDraw_UpdateCameraPosition(On_Main.orig_DoDraw_UpdateCameraPosition orig)
         {
             //this hook is used due to a bug when moving the camera seperate from the player
             orig();
             RenderTails();
         }
 
-        public static Rectangle cullRect = new Rectangle();
-
-        private static void Main_DoUpdate(On_Main.orig_DoUpdate orig, Main self, ref GameTime gameTime)
+        private void Main_DoUpdate(On_Main.orig_DoUpdate orig, Main self, ref GameTime gameTime)
         {
-            cullRect = new Rectangle((int)Main.screenPosition.X, (int)Main.screenPosition.Y, Main.screenWidth, Main.screenHeight);
-            cullRect.Inflate(Main.screenWidth, Main.screenHeight);//adds the values to each side of rect (resulting rect ends up with a new width of old value + new value * 2)
+            CullRect = new Rectangle((int)Main.screenPosition.X, (int)Main.screenPosition.Y, Main.screenWidth, Main.screenHeight);
+            CullRect.Inflate(Main.screenWidth, Main.screenHeight);//adds the values to each side of rect (resulting rect ends up with a new width of old value + new value * 2)
 
-            foreach (NPC npc in TailGlobalNPC.RemovalQueue)
-                TailGlobalNPC.ActiveTailNpcsList.Remove(npc);
-
-            TailGlobalNPC.RemovalQueue.Clear();
-
-            foreach (KeyValuePair<NPC, TailInstance> pair in TailGlobalNPC.ActiveTailNpcsList)
+            if (TailLib.NpcRenderingActive)
             {
-                if (!pair.Key.active)
+
+                foreach (NPC npc in TailGlobalNPC.RemovalQueue)
+                    TailGlobalNPC.ActiveTailNpcsList.Remove(npc);
+
+                TailGlobalNPC.RemovalQueue.Clear();
+
+                foreach (KeyValuePair<NPC, TailInstance> pair in TailGlobalNPC.ActiveTailNpcsList)
                 {
-                    pair.Value.Remove();
-                    TailGlobalNPC.RemovalQueue.Add(pair.Key);
+                    if (!pair.Key.active)
+                    {
+                        pair.Value.Remove();
+                        TailGlobalNPC.RemovalQueue.Add(pair.Key);
+                    }
                 }
             }
             orig(self, ref gameTime);
         }
 
-        private static void RenderTails()//draws tails to the rendertargets, just needs a time when no rendertarget or spritebatch is active
+        private void RenderTails()//draws tails to the rendertargets, just needs a time when no rendertarget or spritebatch is active
         {
             GraphicsDevice graphics = Main.instance.GraphicsDevice;
 
+            //PLAYERS
             graphics.SetRenderTarget(PlayerTailTarget);
             graphics.Clear(Color.Transparent);
 
@@ -143,7 +176,10 @@ namespace TailLib
 
 
 
+            if (!TailLib.NpcRenderingActive)//stop here if npcs are not being rendered
+                return;
 
+            //NPCS
             graphics.SetRenderTarget(NpcTailTarget);
             graphics.Clear(Color.Transparent);
 
@@ -175,17 +211,20 @@ namespace TailLib
         //}
 
         //draws both player and npc tails to the world
-        private static void DrawTailTarget(Terraria.On_Main.orig_DrawNPCs orig, Main self, bool behindTiles)
+        private void DrawTailTarget(Terraria.On_Main.orig_DrawNPCs orig, Main self, bool behindTiles)
         {
-            Main.spriteBatch.End();
+            if (TailLib.NpcRenderingActive)
+            {
+                Main.spriteBatch.End();
 
 
-            Main.spriteBatch.Begin(default, null, SamplerState.PointClamp, null, null, null);
-            Main.spriteBatch.Draw(NpcTailTarget, new Rectangle(0, 0, PlayerTailTarget.Width, PlayerTailTarget.Height), null, Color.White, 0, default, Main.LocalPlayer.gravDir == 1 ? SpriteEffects.None : SpriteEffects.FlipVertically, default);
-            Main.spriteBatch.End();
+                Main.spriteBatch.Begin(default, null, SamplerState.PointClamp, null, null, null);
+                Main.spriteBatch.Draw(NpcTailTarget, new Rectangle(0, 0, PlayerTailTarget.Width, PlayerTailTarget.Height), null, Color.White, 0, default, Main.LocalPlayer.gravDir == 1 ? SpriteEffects.None : SpriteEffects.FlipVertically, default);
+                Main.spriteBatch.End();
 
-            Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, Main.DefaultSamplerState, DepthStencilState.None, Main.Rasterizer, null, Main.GameViewMatrix.TransformationMatrix);
-            
+                Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, Main.DefaultSamplerState, DepthStencilState.None, Main.Rasterizer, null, Main.GameViewMatrix.TransformationMatrix);
+            }
+
             orig(self, behindTiles);
 
             Main.spriteBatch.End();
