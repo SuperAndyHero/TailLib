@@ -1,5 +1,7 @@
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Steamworks;
 using System.Collections.Generic;
 using Terraria;
 using Terraria.ModLoader;
@@ -19,15 +21,21 @@ namespace TailLib
             get { return _NpcRenderingActive; }
             set
             {
-                ModContent.GetInstance<TailSystem>().CheckNpcTarget(value);
+                var modsys = ModContent.GetInstance<TailSystem>();
+                if (modsys == null)
+                    return;
+                ModContent.GetInstance<TailLib>().AddContent<TailGlobalNPC>();//this may cause issues if other mods set this during loading, if this happens remove the option global npc content adding
+                modsys.CheckNpcTarget(value);
                 _NpcRenderingActive = value;
             }
         }
 
         public static BasicEffect BasicEffect;
-
+        public static Effect PixelationEffect;
         public override void Load()
         {
+            NpcRenderingActive = true;
+            PixelationEffect = ModContent.Request<Effect>("TailLib/Effects/pixelationSB", ReLogic.Content.AssetRequestMode.ImmediateLoad).Value;
             Main.QueueMainThreadAction(() => SetupEffect());
         }
 

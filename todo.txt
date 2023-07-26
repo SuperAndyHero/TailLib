@@ -5,13 +5,11 @@ check one more time if chain.screenpos needs the extra offset
 add more config options
 find out where float percision error is coming from (precision is being lost, not gained)
 having frameskip off causes random weird offsets for a single frame
-config option to force npc active state (debug only unless it is needed)
+check if disabler breaks in edge cases
 
 Needed before release:
 
 Library:
-check if disabler breaks when enabling/disabling mid game, or in other edge cases
-pixelation (needs shader, or another method that does not need extra matrix scaling)
 check if gravity breaks tails for other players/moving the camera
 make sure rendering culling does not break anything
 make sure sim culling does not break anything
@@ -22,7 +20,12 @@ shark tail is a bit too low, or needs sprite change
 Very large fox tail
 maybe implement cat and alien tail from vanilla costumes (cant find frames)
 
+
+
 Done:
+pixelation
+config option to force npc active state (debug only unless it is needed)
+check if disabler breaks when enabling/disabling mid game
 Item names
 Check if npc disabler works
 figure out how to only enable npc RT if a mod needs it (loading order issues? or use property when setting to true)

@@ -12,6 +12,7 @@ namespace TailLib
     /// <summary>
     /// This mod's globalNpc for handling tails on npcs
     /// </summary>
+    [Autoload(false)]
     public class TailGlobalNPC : GlobalNPC
 	{
 
@@ -34,7 +35,7 @@ namespace TailLib
         {
             //npcs dont support having their tail type changed automatically (likely not needed)
             //only runs when on screen
-            if (tailActive && (TailSystem.CullRect.Contains(npc.Center.ToPoint()) || TailSystem.CullRect.Contains(tail.tailBones.startPoint.ToPoint())))
+            if (tailActive && TailLib.NpcRenderingActive && (TailSystem.CullRect.Contains(npc.Center.ToPoint()) || TailSystem.CullRect.Contains(tail.tailBones.startPoint.ToPoint())))
             {
                 tail.tailBones.Active = npc.active && tailActive;
                 tail.Update(npc.Center + new Vector2(0, npc.gfxOffY), new Vector2(npc.direction, 1));
@@ -50,6 +51,12 @@ namespace TailLib
                 tail.Remove();
             return base.CheckDead(npc);
         }
+
+        //This disables this class entirely and it is loaded elsewhere if needed, the performance/memory gain isnt much by doing this
+        //public override bool IsLoadingEnabled(Mod mod)
+        //{
+        //    return false;//this runs before mod.load, so there is no reason to check if the value is true
+        //}
 
         public override void Unload()//is not per npc instance
         {

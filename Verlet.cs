@@ -134,7 +134,7 @@ namespace TailLib
                 Vector2 velocity = (segment.posNow - segment.posOld) / drag;
                 segment.posOld = segment.posNow;
                 segment.posNow += velocity;
-                segment.posNow += customGravity ? forceGravities[i] * forceGravity : forceGravity;
+                segment.posNow += customGravity ? forceGravities[i] * forceGravity : forceGravity;//mult this by config's rigidness
             }
 
             for (int i = 0; i < constraintRepetitions; i++)//the amount of times Constraints are applied per update

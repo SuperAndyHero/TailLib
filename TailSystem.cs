@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TailLib.Configs;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.Graphics.Shaders;
@@ -213,12 +214,20 @@ namespace TailLib
         //draws both player and npc tails to the world
         private void DrawTailTarget(Terraria.On_Main.orig_DrawNPCs orig, Main self, bool behindTiles)
         {
+            TailLib.PixelationEffect.Parameters["pixelation"].SetValue(2f);
+            TailLib.PixelationEffect.Parameters["resolution"].SetValue(new Vector2(Main.screenWidth / 2, Main.screenHeight / 2));
+
             if (TailLib.NpcRenderingActive)
             {
                 Main.spriteBatch.End();
 
+                if(Config.TailPixelationLevel != Config.PixelationLevel.None)
+                    Main.spriteBatch.Begin(default, null, 
+                        Config.TailPixelationLevel == Config.PixelationLevel.OnAA ? SamplerState.LinearClamp : SamplerState.PointClamp, 
+                        null, null, TailLib.PixelationEffect);
+                else
+                    Main.spriteBatch.Begin(default, null, SamplerState.PointClamp, null, null, null);
 
-                Main.spriteBatch.Begin(default, null, SamplerState.PointClamp, null, null, null);
                 Main.spriteBatch.Draw(NpcTailTarget, new Rectangle(0, 0, PlayerTailTarget.Width, PlayerTailTarget.Height), null, Color.White, 0, default, Main.LocalPlayer.gravDir == 1 ? SpriteEffects.None : SpriteEffects.FlipVertically, default);
                 Main.spriteBatch.End();
 
@@ -229,7 +238,13 @@ namespace TailLib
 
             Main.spriteBatch.End();
 
-            Main.spriteBatch.Begin(default, null, SamplerState.PointClamp, null, null, null);
+            if (Config.TailPixelationLevel != Config.PixelationLevel.None)
+                Main.spriteBatch.Begin(default, null,
+                    Config.TailPixelationLevel == Config.PixelationLevel.OnAA ? SamplerState.LinearClamp : SamplerState.PointClamp, 
+                    null, null, TailLib.PixelationEffect);
+            else
+                Main.spriteBatch.Begin(default, null, SamplerState.PointClamp, null, null, null);
+
             Main.spriteBatch.Draw(PlayerTailTarget, new Rectangle(0, 0, PlayerTailTarget.Width, PlayerTailTarget.Height), null, Color.White, 0, default, Main.LocalPlayer.gravDir == 1 ? SpriteEffects.None : SpriteEffects.FlipVertically, default);
             Main.spriteBatch.End();
 
