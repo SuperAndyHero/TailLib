@@ -5,24 +5,31 @@ check one more time if chain.screenpos needs the extra offset
 add more config options
 find out where float percision error is coming from (precision is being lost, not gained)
 having frameskip off causes random weird offsets for a single frame
-check if disabler breaks in edge cases
 
 Needed before release:
 
 Library:
-check if gravity breaks tails for other players/moving the camera
-make sure rendering culling does not break anything
-make sure sim culling does not break anything
+ Implement:
+
+ Check:
+	check if npc disabler breaks in edge cases
+	check if gravity breaks tails for other players/moving the camera
+	make sure rendering culling does not break anything
+	make sure sim culling does not break anything
 
 Content:
-forces on shark tail need a major rewrite
-shark tail is a bit too low, or needs sprite change
-Very large fox tail
-maybe implement cat and alien tail from vanilla costumes (cant find frames)
+ Implement:
+ 	otter tail is slightly offset wrong
+	forces on shark tail need a major rewrite
+	shark tail is a bit too low, or needs sprite change
+	Very large fox tail
+	maybe implement cat and alien tail from vanilla costumes (cant find frames)
 
 
 
 Done:
+lang names
+add rigidness slider
 pixelation
 config option to force npc active state (debug only unless it is needed)
 check if disabler breaks when enabling/disabling mid game

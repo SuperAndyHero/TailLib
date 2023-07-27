@@ -2,14 +2,26 @@ Configs: {
 	Config: {
 		DisplayName: Config
 
-		ShowWireFrame: {
-			Label: Show Wire Frame
+		TailPixelationLevelConfig: {
+			Label: Tail Pixelation
 			Tooltip: ""
 		}
 
-		PixelateTails: {
-			Label: Pixelate Tails
-			Tooltip: ""
+		TailRigidnessConfig: {
+			Label: Tail Rigidness
+			Tooltip: "Lower to increase tail waviness\nRecommended to keep this at default"
 		}
+
+		WireFrameModeConfig: {
+			Label: Enable Wireframe
+			Tooltip: "Debug feature"
+		}
+	}
+
+	PixelationLevel: {
+		Tooltip: ""
+		None.Label: Off
+		On.Label: On
+		OnAA.Label: On + Anti-Aliasing
 	}
 }

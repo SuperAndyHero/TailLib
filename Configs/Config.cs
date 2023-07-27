@@ -6,9 +6,6 @@ namespace TailLib.Configs
 	{
 		public override ConfigScope Mode => ConfigScope.ClientSide;
 
-        //public static bool PixelateTailMode = false;
-        //public bool PixelateTails { get { return PixelateTailMode; } set { PixelateTailMode = value; } }
-
         public enum PixelationLevel
         {
             None,
@@ -17,12 +14,23 @@ namespace TailLib.Configs
         }
 
         public static PixelationLevel TailPixelationLevel = PixelationLevel.None;
-        public PixelationLevel TailPixelation { get { return TailPixelationLevel; } set { TailPixelationLevel = value; } }
 
-        //todo tail rigidness, adjusts the amount of gravity on the chain from 0.25 to 1
+        [DrawTicks]
+        public PixelationLevel TailPixelationLevelConfig { get { return TailPixelationLevel; } set { TailPixelationLevel = value; } }
+
+
+
+        public static float TailRigidness = 1f;
+
+        [Range(0.3f, 1f)]
+        [DrawTicks]
+        [Increment(0.1f)]
+        public float TailRigidnessConfig { get { return TailRigidness; } set { TailRigidness = value; } }
+
+
 
         public static bool WireFrameMode = false;
-        public bool ShowWireFrame { get { return WireFrameMode; } set { WireFrameMode = value; } }
+        public bool WireFrameModeConfig { get { return WireFrameMode; } set { WireFrameMode = value; } }
 
         //public bool DEBUG_Force_Npc_Enabled_State { get { return TailLib.NpcRenderingActive; } set { TailLib.NpcRenderingActive = value; } }
     }

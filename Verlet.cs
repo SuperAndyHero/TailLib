@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TailLib.Configs;
 using Terraria;
 
 namespace TailLib
@@ -134,7 +135,7 @@ namespace TailLib
                 Vector2 velocity = (segment.posNow - segment.posOld) / drag;
                 segment.posOld = segment.posNow;
                 segment.posNow += velocity;
-                segment.posNow += customGravity ? forceGravities[i] * forceGravity : forceGravity;//mult this by config's rigidness
+                segment.posNow += (customGravity ? forceGravities[i] * forceGravity : forceGravity) * Config.TailRigidness;//mult this by config's rigidness
             }
 
             for (int i = 0; i < constraintRepetitions; i++)//the amount of times Constraints are applied per update
