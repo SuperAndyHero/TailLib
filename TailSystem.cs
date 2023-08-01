@@ -1,12 +1,17 @@
 using log4net.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using MonoMod.Core.Platforms;
+using MonoMod.RuntimeDetour;
+using MonoMod.RuntimeDetour.HookGen;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using TailLib.Configs;
 using Terraria;
 using Terraria.DataStructures;
+using Terraria.Graphics;
 using Terraria.Graphics.Shaders;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -70,6 +75,9 @@ namespace TailLib
             Npc
         }
 
+
+        private delegate void orig_ModifyTransformMatrix(ref SpriteViewMatrix Transform);
+
         public override void Load()
         {
             Main.QueueMainThreadAction(() => 
@@ -82,7 +90,20 @@ namespace TailLib
             //On.Terraria.DataStructures.PlayerDrawLayers.DrawPlayer_RenderAllLayers += DrawTailTargetPlayer;
             Terraria.On_Main.DrawNPCs += DrawTailTarget;//draws both rendertargets to the screen
             Terraria.On_Main.DoUpdate += Main_DoUpdate;//updates active npc tails
-            Terraria.On_Main.DoDraw_UpdateCameraPosition += On_Main_DoDraw_UpdateCameraPosition;//renders tails to rendertarget
+
+            Type SystemLoaderType = typeof(Terraria.ModLoader.SystemLoader);
+            MethodInfo detourMethod = SystemLoaderType.GetMethod("ModifyTransformMatrix", BindingFlags.Public | BindingFlags.Static);
+
+            //var a = new Hook(detourMethod, ModifyTransformMatrix_Detour);
+            MonoModHooks.Add(detourMethod, ModifyTransformMatrix_Detour);
+
+            //Terraria.On_Main.DoDraw_UpdateCameraPosition += On_Main_DoDraw_UpdateCameraPosition;//remove
+        }
+
+        private void ModifyTransformMatrix_Detour(orig_ModifyTransformMatrix orig, ref SpriteViewMatrix Transform)
+        {
+            orig(ref Transform);
+            RenderTails();//this hook position fixes camera delay and zoom delay
         }
 
         /// <summary>
@@ -119,15 +140,21 @@ namespace TailLib
             modplayer.ResetTail();//method does nothing if the tail is not active
         }
 
-        private void On_Main_DoDraw_UpdateCameraPosition(On_Main.orig_DoDraw_UpdateCameraPosition orig)
-        {
-            //this hook is used due to a bug when moving the camera seperate from the player
-            orig();
-            RenderTails();
-        }
-
+        //private void On_Main_DoDraw_UpdateCameraPosition(On_Main.orig_DoDraw_UpdateCameraPosition orig)
+        //{
+        //    //this hook is used due to a bug when moving the camera seperate from the player
+        //    orig();
+        //    //RenderTails();//uses other hook since it also fixes zoom
+        //}
+        private bool LastMouseL = false;
         private void Main_DoUpdate(On_Main.orig_DoUpdate orig, Main self, ref GameTime gameTime)
         {
+            if (Main.mouseLeft &! LastMouseL)
+            {
+                Main.LocalPlayer.position.X -= 0.1f;
+            }
+            LastMouseL = Main.mouseLeft;
+
             CullRect = new Rectangle((int)Main.screenPosition.X, (int)Main.screenPosition.Y, Main.screenWidth, Main.screenHeight);
             CullRect.Inflate(Main.screenWidth, Main.screenHeight);//adds the values to each side of rect (resulting rect ends up with a new width of old value + new value * 2)
 
@@ -154,6 +181,7 @@ namespace TailLib
         private void RenderTails()//draws tails to the rendertargets, just needs a time when no rendertarget or spritebatch is active
         {
             GraphicsDevice graphics = Main.instance.GraphicsDevice;
+            graphics.SamplerStates[0] = SamplerState.PointClamp;//position in main.draw causes this to be linear by default
 
             //PLAYERS
             graphics.SetRenderTarget(PlayerTailTarget);
@@ -197,6 +225,7 @@ namespace TailLib
             Main.spriteBatch.End();
 
             graphics.SetRenderTarget(null);
+            graphics.SamplerStates[0] = SamplerState.LinearClamp;//returns to previous sampler to prevent possible issues
         }
 
         //broken due to pixelation issues, moved to npc draw hook
@@ -214,21 +243,23 @@ namespace TailLib
         //draws both player and npc tails to the world
         private void DrawTailTarget(Terraria.On_Main.orig_DrawNPCs orig, Main self, bool behindTiles)
         {
-            TailLib.PixelationEffect.Parameters["pixelation"].SetValue(2f);
+            TailLib.PixelationEffect.Parameters["pixelation"].SetValue(Main.GameZoomTarget);
             TailLib.PixelationEffect.Parameters["resolution"].SetValue(new Vector2(Main.screenWidth / 2, Main.screenHeight / 2));
+
+            bool pixelation = Config.TailPixelationLevel != Config.PixelationLevel.None;
 
             if (TailLib.NpcRenderingActive)
             {
                 Main.spriteBatch.End();
 
-                if(Config.TailPixelationLevel != Config.PixelationLevel.None)
+                if(pixelation)
                     Main.spriteBatch.Begin(default, null, 
                         Config.TailPixelationLevel == Config.PixelationLevel.OnAA ? SamplerState.LinearClamp : SamplerState.PointClamp, 
                         null, null, TailLib.PixelationEffect);
                 else
                     Main.spriteBatch.Begin(default, null, SamplerState.PointClamp, null, null, null);
 
-                Main.spriteBatch.Draw(NpcTailTarget, new Rectangle(0, 0, PlayerTailTarget.Width, PlayerTailTarget.Height), null, Color.White, 0, default, Main.LocalPlayer.gravDir == 1 ? SpriteEffects.None : SpriteEffects.FlipVertically, default);
+                Main.spriteBatch.Draw(NpcTailTarget, new Rectangle(0, 0, PlayerTailTarget.Width, PlayerTailTarget.Height + (pixelation ? 2 : 0)), null, Color.White, 0, default, Main.LocalPlayer.gravDir == 1 ? SpriteEffects.None : SpriteEffects.FlipVertically, default);
                 Main.spriteBatch.End();
 
                 Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, Main.DefaultSamplerState, DepthStencilState.None, Main.Rasterizer, null, Main.GameViewMatrix.TransformationMatrix);
@@ -238,14 +269,14 @@ namespace TailLib
 
             Main.spriteBatch.End();
 
-            if (Config.TailPixelationLevel != Config.PixelationLevel.None)
+            if (pixelation)
                 Main.spriteBatch.Begin(default, null,
                     Config.TailPixelationLevel == Config.PixelationLevel.OnAA ? SamplerState.LinearClamp : SamplerState.PointClamp, 
                     null, null, TailLib.PixelationEffect);
             else
                 Main.spriteBatch.Begin(default, null, SamplerState.PointClamp, null, null, null);
 
-            Main.spriteBatch.Draw(PlayerTailTarget, new Rectangle(0, 0, PlayerTailTarget.Width, PlayerTailTarget.Height), null, Color.White, 0, default, Main.LocalPlayer.gravDir == 1 ? SpriteEffects.None : SpriteEffects.FlipVertically, default);
+            Main.spriteBatch.Draw(PlayerTailTarget, new Rectangle(0, 0, PlayerTailTarget.Width, PlayerTailTarget.Height + (pixelation ? 2 : 0)), null, Color.White, 0, default, Main.LocalPlayer.gravDir == 1 ? SpriteEffects.None : SpriteEffects.FlipVertically, default);
             Main.spriteBatch.End();
 
             Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, Main.DefaultSamplerState, DepthStencilState.None, Main.Rasterizer, null, Main.GameViewMatrix.TransformationMatrix);

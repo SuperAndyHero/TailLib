@@ -59,11 +59,16 @@ namespace TailLib
         {
             if (currentlyActive && tail != null)
             {
-                tail.ResetTailBones(Player.Center);
+                tail.ResetTailBones(Player.MountedCenter);
             }
         }
 
         public override void PreUpdate()
+        {
+            //Main.LocalPlayer.gravity = 0f;
+        }
+
+        public override void PostUpdate()
         {
             if (currentlyActive)
             {
@@ -77,17 +82,21 @@ namespace TailLib
                     if (_currentTailType != null && (tail.tailBase.GetType() != _currentTailType || (!previouslyActive && currentlyActive)))
                     {
                         tail.Remove();
-                        tail = new TailInstance(_currentTailType, Player.Center, Layer.Player, Player, (int)Player.gravDir);
+                        tail = new TailInstance(_currentTailType, Player.MountedCenter, Layer.Player, Player, (int)Player.gravDir);
                     }
 
                     tail.tailBones.Active = !Player.dead && currentlyActive;
 
-                    tail.Update(Player.MountedCenter + new Vector2(/*fixes centering issue*/ -0.5f, Player.gfxOffY), Player.FacingDirection());
+                    Vector2 roundedPos = new Vector2(
+                        MathF.Round(Player.MountedCenter.X, MidpointRounding.ToNegativeInfinity),
+                        MathF.Round(Player.MountedCenter.Y, MidpointRounding.AwayFromZero));
+
+                    tail.Update(roundedPos + new Vector2(/*fixes centering issue*/ -0.5f, Player.gfxOffY), Player.FacingDirection());
                     tail.alpha = (255 - Player.immuneAlpha) * 0.003921568627f;//for the blinking when damaged
                     tail.armorShaderData = GameShaders.Armor.GetShaderFromItemId(DyeItemType);//GameShaders.Armor.GetShaderFromItemId(ItemID.MushroomDye);
                 }
                 else if (_currentTailType != null)
-                    tail = new TailInstance(_currentTailType, Player.Center, Layer.Player, Player, (int)Player.gravDir);
+                    tail = new TailInstance(_currentTailType, Player.MountedCenter, Layer.Player, Player, (int)Player.gravDir);
             }
         }
 

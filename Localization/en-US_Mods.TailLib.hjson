@@ -9,12 +9,16 @@ Configs: {
 
 		TailRigidnessConfig: {
 			Label: Tail Rigidness
-			Tooltip: "Lower to increase tail waviness\nRecommended to keep this at default"
+			Tooltip:
+				'''
+				Lower to increase tail waviness
+				Recommended to keep this at default
+				'''
 		}
 
 		WireFrameModeConfig: {
 			Label: Enable Wireframe
-			Tooltip: "Debug feature"
+			Tooltip: Debug feature
 		}
 	}
 

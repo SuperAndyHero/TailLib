@@ -3,14 +3,29 @@ globalNPC's tail RemovalQueue should be an actual queue
 forces on starry tail need to be redone
 check one more time if chain.screenpos needs the extra offset
 add more config options
-find out where float percision error is coming from (precision is being lost, not gained)
 having frameskip off causes random weird offsets for a single frame
+not having window selected breaks rendering with dyes
+zoom is delayed but this cannot be seen, may be a clue to other issues?
+
+find out where float percision error is coming from (precision is being lost, not gained)
+has to do with passed in pos, in a tail's DrawSprites drawing to a part of the screen has no jitter
+but using (Main.LocalPlayer.position - Main.screenPosition) DOES have jitter (does not use chain pos at all, so cant be screen lag correction)
+using only player.position does not have jitter
+no jitten when moving camera with binoculars
+jitter from the camera being moved before the player has moved? or the other way around?
+TODO: check source and try other render hook positions (vanity mod has starry tail modified to be a jitter detector)
+jitter effects Y pos too
+solution(?) player pos more precice than screen pos???
+jitter fixed (for base at least)
+todo: try and offset drawing by precision error and see if it all can be fixed
+remove debug code from tail player and tail system
 
 Needed before release:
 
 Library:
  Implement:
-
+	PixelFilter needs to zoom pixels towards the center of the screen, like the camera does
+	use AppliesToEntity in globalnpc to to save performance
  Check:
 	check if npc disabler breaks in edge cases
 	check if gravity breaks tails for other players/moving the camera
@@ -19,7 +34,7 @@ Library:
 
 Content:
  Implement:
- 	otter tail is slightly offset wrong
+	Recipes
 	forces on shark tail need a major rewrite
 	shark tail is a bit too low, or needs sprite change
 	Very large fox tail
@@ -28,6 +43,7 @@ Content:
 
 
 Done:
+otter tail is slightly offset wrong
 lang names
 add rigidness slider
 pixelation

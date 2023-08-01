@@ -93,7 +93,7 @@ namespace TailLib
 
                 if (SpawnEndPoint)
                 {
-                    float distance = (int)(Vector2.Distance(startPoint, endPoint) / segmentCount);
+                    float distance = (int)(Vector2.Distance(startPoint, endPoint) / segmentCount);//int cast is needed to prevent a nan(?) error, anything over 3 decimal places causes it
                     nextRopePoint += Vector2.Normalize(endPoint - nextRopePoint) * distance * i;
                 }
                 else
@@ -185,7 +185,7 @@ namespace TailLib
         public Vector2 posNow;
         public Vector2 posOld;
 
-        public Vector2 ScreenPos => (posNow - Main.screenPosition) + (posNow - posOld);
+        public Vector2 ScreenPos => (posNow - Main.screenPosition);// + (posNow - posOld);
 
         public RopeSegment(Vector2 pos)
         {

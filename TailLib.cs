@@ -1,8 +1,12 @@
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using MonoMod.RuntimeDetour;
+using MonoMod.RuntimeDetour.HookGen;
 using Steamworks;
+using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Terraria;
 using Terraria.ModLoader;
 
